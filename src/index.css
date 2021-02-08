@@ -5,9 +5,69 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #333333;
+  color: #fff;
+  text-align: center;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+.preview{
+  margin-top: 50px;
+  float: left;
+}
+
+.profile-manager{
+  margin-top: 50px;
+  width: 100%;
+}
+
+
+.profile{
+  margin: 5px;
+  background: #444;
+  border-radius: 5px;
+  width: 160px;
+  /*
+  height: 200px;
+  width: 200px;
+  float: left;
+  */
+  display: inline-block;
+  text-align: center;
+}
+
+.active{
+  background-color: #777;
+}
+
+.profiles{
+  text-align: left;
+}
+
+.profiles-inner{
+  margin-left: 20%;
+  margin-right: 20%;
+  height: 250px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.profile-footer{
+  color: #fff;
+  position: relative;
+  margin-bottom: 5px;
+  height: 25px;
+}
+
+.profile-remove-button{
+  margin-left: 10px;
+}
+
+.profile canvas:hover{
+  background: #888;
+  cursor: pointer;
 }
