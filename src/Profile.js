@@ -1,6 +1,6 @@
 import React, {useEffect, useRef} from "react";
 
-function Profile(props){
+function Profile(props) {
     let id = props.profile.id;
     //let completeCrop = props.profile.crop;
     let imgRef = props.imgRef;
@@ -8,7 +8,7 @@ function Profile(props){
     const previewCanvasRef = useRef(null);
     //let [name, setName] = useState(('Profile '+id))
 
-    useEffect(()=>{
+    useEffect(() => {
         if (!props.profile.crop || !previewCanvasRef.current || !imgRef.current) {
             return;
         }
@@ -39,22 +39,25 @@ function Profile(props){
             crop.height
         );
     }, [imgRef, props.profile.crop]);
+/*
 
-    function getClassName(){
+    function getClassName() {
         return props.profile.active ? "profile active" : "profile";
     }
+*/
 
-    function getStyle(){
+    function getStyle() {
         return {
-            height:'160px',
-            borderRadius:props.round?'50%':'5px',
+            height: '160px',
+            borderRadius: props.round ? '50%' : '2px',
+            display: 'flex',
         }
     }
 
-    function generateDownload(){
+    function generateDownload() {
         let canvas = previewCanvasRef.current;
 
-        canvas.toBlob(blob=>{
+        canvas.toBlob(blob => {
             const url = window.URL.createObjectURL(blob);
 
             const anchor = document.createElement('a');
@@ -66,17 +69,18 @@ function Profile(props){
         }, "image/png", 1);
     }
 
-    return(
-        <div className={getClassName()} >
+    return (
+        <div className={`profile ${props.profile.active?'active':''}`} onClick={props.setSelectedProfile.bind(this, id)}>
             <div>
                 <canvas
-                    onClick={props.setSelectedProfile.bind(this, id)}
                     ref={previewCanvasRef}
                     style={getStyle()}
                 />
             </div>
-            <div className={"profile-footer"}>
-                Profile: {props.profile.name}
+            <div className={'profile-footer'}>
+                <div className={'profile-name'}>
+                    Profile: {props.profile.name}
+                </div>
                 {/*<input type={'text'} onChange={e=>props.setProfileName.bind(this, id, e.target.value)}/>*/}
                 {/*Profile {props.i}*/}
                 {/*<button onClick={generateDownload}>dl</button>*/}

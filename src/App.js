@@ -27,7 +27,12 @@ function App() {
             );
             reader.readAsDataURL(e.target.files[0]);
             setSelected(0);
-            setProfiles([{id: uuidv4(), name: Math.round(Math.random()*100), crop: {unit: '%', width: 30, aspect: 1}, active: true}]);
+            setProfiles([{
+                id: uuidv4(),
+                name: Math.round(Math.random() * 100),
+                crop: {unit: '%', width: 30, aspect: 1},
+                active: true
+            }]);
             //setCounter(counter+1)
         }
     }
@@ -37,25 +42,20 @@ function App() {
             let fc = profiles[profiles.length - 1].crop
 
             let p = [...profiles]
-            p.forEach(prof=>prof.active=false);
-            setProfiles(p.concat({id: uuidv4(), name: Math.round(Math.random()*100), crop: fc, active: true}));
+            p.forEach(prof => prof.active = false);
+            setProfiles(p.concat({id: uuidv4(), name: Math.round(Math.random() * 100), crop: fc, active: true}));
             //console.log(profiles)
             //setCounter(counter+1)
             //setSelectedProfile(profiles.length)
             setSelected(profiles.length)
             //setActive(profiles.length)
-
-
-
-
-
         }
     }
 
     function resetProfiles() {
         if (src) {
             //setCounter(0);
-            setProfiles([{id: uuidv4(), name: Math.round(Math.random()*100), crop: crop, active: true}]);
+            setProfiles([{id: uuidv4(), name: Math.round(Math.random() * 100), crop: crop, active: true}]);
             setSelected(0);
         }
     }
@@ -66,9 +66,9 @@ function App() {
             if (prof.id === id) {
                 setSelected(i);
                 setCrop(prof.crop);
-                prof.active=true;
-            }else{
-                prof.active=false;
+                prof.active = true;
+            } else {
+                prof.active = false;
             }
         });
         setProfiles(p);
@@ -107,9 +107,11 @@ function App() {
 
     return (
         <div>
-            <UploadButton
-                onSelect={onSelectFile}
-            />
+            <div className={'pop-container'}>
+                <UploadButton
+                    onSelect={onSelectFile}
+                />
+            </div>
             {
                 //imgRef.current &&
                 <div className={'crop-container'}>
@@ -121,7 +123,7 @@ function App() {
                         ruleOfThirds
                         onImageLoaded={(img) => {
                             imgRef.current = img;
-                            console.log(1200/img.width)
+                            console.log(1200 / img.width)
                         }}
                         onComplete={updateCrop}
                     />

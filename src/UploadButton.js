@@ -4,12 +4,14 @@ import {useRef} from "react";
 //import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import Button from '@material-ui/core/Button'
 
-function UploadButton(props){
+function UploadButton(props) {
     const inpRef = useRef(null)
-    return(
+    return (
         <div>
             <Button
-                onClick={()=>{inpRef.current.click()}}
+                onClick={() => {
+                    inpRef.current.click()
+                }}
                 variant={'contained'}
                 color={'primary'}
                 //startIcon={<CloudUploadIcon/>}
@@ -20,7 +22,7 @@ function UploadButton(props){
                 type={'file'}
                 ref={inpRef}
                 onChange={props.onSelect}
-                style={{display:'none'}}
+                style={{display: 'none'}}
             />
         </div>
     )
