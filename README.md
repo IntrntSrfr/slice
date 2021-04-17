@@ -7,3 +7,7 @@ cases of two or more profiles.
 ## Preview
 
 ![Preview gif](./assets/preview.gif)
+
+The image below showcases a visual update, it will still work the same as the preview above. I have just been too lazy to make another gif of it.
+
+![Preview](./assets/preview2.png)
