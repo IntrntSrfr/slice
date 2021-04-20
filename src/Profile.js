@@ -51,6 +51,7 @@ function Profile(props) {
             height: '160px',
             borderRadius: props.round ? '50%' : '2px',
             display: 'flex',
+            transition:'0.1s'
         }
     }
 

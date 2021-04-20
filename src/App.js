@@ -87,7 +87,6 @@ function App() {
     }
 
     function removeProfile(id) {
-        console.log(id)
         if (profiles.length > 1) {
             setProfiles(profiles.filter(p => p.id !== id))
         }
@@ -106,8 +105,8 @@ function App() {
     }
 
     return (
-        <div>
-            <div className={'pop-container'}>
+        <div id={'main'}>
+            <div className={'header-container'}>
                 <UploadButton
                     onSelect={onSelectFile}
                 />
@@ -118,12 +117,11 @@ function App() {
                     <ReactCrop
                         src={src}
                         crop={crop}
-                        //onChange={c => setCrop(c)}
-                        onChange={updateCrop}
+                        onChange={c => setCrop(c)}
+                        //onChange={updateCrop}
                         ruleOfThirds
                         onImageLoaded={(img) => {
                             imgRef.current = img;
-                            console.log(1200 / img.width)
                         }}
                         onComplete={updateCrop}
                     />
