@@ -38,7 +38,7 @@ function App() {
     }
 
     function addProfile() {
-        if (src) {
+        //if (src) {
             let fc = profiles[profiles.length - 1].crop
 
             let p = [...profiles]
@@ -49,15 +49,16 @@ function App() {
             //setSelectedProfile(profiles.length)
             setSelected(profiles.length)
             //setActive(profiles.length)
-        }
+        //}
     }
 
     function resetProfiles() {
-        if (src) {
+
+        //if (src) {
             //setCounter(0);
             setProfiles([{id: uuidv4(), name: Math.round(Math.random() * 100), crop: crop, active: true}]);
             setSelected(0);
-        }
+        //}
     }
 
     function setSelectedProfile(id) {

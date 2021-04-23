@@ -16,6 +16,7 @@ body {
     /*background-color: #0b0c10;*/
     color: #fff;
     text-align: center;
+    user-select: none;
 }
 
 code {
@@ -138,6 +139,7 @@ code {
 
 .profile-footer {
     background-color: #495975;
+    user-select: none;
     color: #e0efff;
     position: relative;
     height: 50px;
