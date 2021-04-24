@@ -19,7 +19,6 @@ function App() {
     const [crop, setCrop] = useState({unit: '%', width: 30, aspect: 1});
     const imgRef = useRef(null);
 
-
     function onSelectFile(e) {
         if (e.target.files && e.target.files.length > 0) {
             const reader = new FileReader();
@@ -50,12 +49,9 @@ function App() {
     }
 
     function resetProfiles() {
-
-        //if (src) {
-            setCounter(1);
-            setProfiles([{id: uuidv4(), name: 1, crop: crop, active: true}]);
-            setSelected(0);
-        //}
+        setCounter(1);
+        setProfiles([{id: uuidv4(), name: 1, crop: crop, active: true}]);
+        setSelected(0);
     }
 
     function setSelectedProfile(id) {
@@ -72,34 +68,47 @@ function App() {
         setProfiles(p);
     }
 
+
     function setProfileName(id, e) {
-        /*
-        profiles.map(p => {
-            if (p.id === id){
-                p.name=e.target.value;
+
+        let profs = [...profiles]
+        profs.forEach(p=>{
+            if(p.id===id){
+                p.name = e
             }
         })
-        */
-        console.log(id)
-        console.log(e.target.value)
+        setProfiles(profs)
     }
 
     function removeProfile(id) {
         if (profiles.length > 1) {
+
             let foundIndex = profiles.findIndex(p => p.id === id)
+
+            setProfiles(profiles.filter(p=>p.id!==id))
+
+            setSelected(foundIndex === 0 ? 0 : foundIndex-1)
+
+
+
+            //setSelectedProfile(profiles[foundIndex===0?0:foundIndex-1].id)
+/*
 
             let p = [...profiles]
             p.forEach(prof => {
                 prof.active = prof.id === id;
             });
 
+*/
+
             // just fix this shit lol
             // this needs to make it so that when a profile is deleted, it will
             // automatically select the profile to the left of it, or the leftmost one if
             // theres no profiles to the left of it
-
+/*
             setProfiles(p.filter(p => p.id !== id))
             setSelected(foundIndex === 0 ? 0 : foundIndex-1)
+            */
         }
     }
 
@@ -148,6 +157,7 @@ function App() {
                     newProfile={addProfile}
                     resetProfiles={resetProfiles}
                     setSelectedProfile={setSelectedProfile}
+                    setProfileName={setProfileName}
                 />
             }
 

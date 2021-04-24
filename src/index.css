@@ -126,6 +126,10 @@ code {
     /*text-align: left;*/
 }
 
+.profile-name input{
+    width: 45px;
+}
+
 .profiles-inner {
     /*
     margin-left: 20%;

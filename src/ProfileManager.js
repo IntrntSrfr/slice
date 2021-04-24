@@ -7,6 +7,7 @@ function ProfileManager(props) {
 
     function generateDownload() {
 
+
     }
 
     return (
@@ -27,7 +28,7 @@ function ProfileManager(props) {
                         <Profile
                             key={v.id}
                             profile={v}
-                            //setProfileName={props.setProfileName}
+                            setProfileName={props.setProfileName}
                             removeProfile={props.removeProfile}
                             setSelectedProfile={props.setSelectedProfile}
                             imgRef={props.imgRef}

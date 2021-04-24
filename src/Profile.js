@@ -80,9 +80,12 @@ function Profile(props) {
             </div>
             <div className={'profile-footer'}>
                 <div className={'profile-name'}>
+                    Profile: <input type={'text'} value={props.profile.name} onChange={e=> props.setProfileName.bind(this, id, e.target.value)()}/>
+                    {/*
                     Profile: {props.profile.name}
-                </div>
-                {/*<input type={'text'} onChange={e=>props.setProfileName.bind(this, id, e.target.value)}/>*/}
+                    */}
+            </div>
+            {/*<input type={'text'} onChange={e=>props.setProfileName.bind(this, id, e.target.value)}/>*/}
                 {/*Profile {props.i}*/}
                 {/*<button onClick={generateDownload}>dl</button>*/}
                 <button className={'profile-remove-button'} onClick={props.removeProfile.bind(this, id)}>X</button>
