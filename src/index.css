@@ -1,7 +1,7 @@
 html,
-body{
+body {
     height: 100%;
-    margin:0;
+    margin: 0;
 }
 
 body {
@@ -23,6 +23,7 @@ code {
     font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
 /*
 
 #root{
@@ -113,6 +114,7 @@ code {
     display: inline-block;
     text-align: center;
 }
+
 .profile:active {
     position: relative;
     top: 1px;
@@ -126,7 +128,7 @@ code {
     /*text-align: left;*/
 }
 
-.profile-name input{
+.profile-name input {
     width: 45px;
 }
 

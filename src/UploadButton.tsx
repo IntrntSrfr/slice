@@ -1,16 +1,22 @@
-import {useRef} from "react";
+import React, {ChangeEvent, useRef} from "react";
 
 
 //import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import Button from '@material-ui/core/Button'
 
-function UploadButton(props) {
-    const inpRef = useRef(null)
+interface Props {
+    onSelect: (e: ChangeEvent<HTMLInputElement>) => void;
+}
+
+function UploadButton(props: Props) {
+    const inpRef = useRef<HTMLInputElement>(null)
     return (
         <div>
             <Button
                 onClick={() => {
-                    inpRef.current.click()
+                    if (inpRef && inpRef.current) {
+                        inpRef.current.click()
+                    }
                 }}
                 variant={'contained'}
                 color={'primary'}
@@ -19,6 +25,7 @@ function UploadButton(props) {
                 Select image
             </Button>
             <input
+                accept={'image/jpeg, image/png'}
                 type={'file'}
                 ref={inpRef}
                 onChange={props.onSelect}

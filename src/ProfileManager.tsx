@@ -1,12 +1,24 @@
 import Profile from './Profile'
 import {Button, ButtonGroup} from "@material-ui/core";
-import {useState} from "react";
+import React, {useState} from "react";
+import {newProfile, ProfileData, removeProfile, resetProfiles, setProfileName, setSelectedProfile} from "./types";
 
-function ProfileManager(props) {
+interface Props {
+    newProfile: newProfile;
+    resetProfiles: resetProfiles;
+
+    setSelectedProfile: setSelectedProfile;
+    setProfileName: setProfileName
+    removeProfile: removeProfile
+
+    profiles: ProfileData[];
+    imgRef: React.RefObject<HTMLImageElement>
+}
+
+function ProfileManager(props: Props) {
     const [round, setRound] = useState(true);
 
     function generateDownload() {
-
 
     }
 
@@ -24,10 +36,10 @@ function ProfileManager(props) {
             </ButtonGroup>
             <div className={'profiles'}>
                 <div className={'profiles-inner'}>
-                    {props.profiles.map(v => (
+                    {props.profiles.map(prof => (
                         <Profile
-                            key={v.id}
-                            profile={v}
+                            key={prof.id}
+                            profile={prof}
                             setProfileName={props.setProfileName}
                             removeProfile={props.removeProfile}
                             setSelectedProfile={props.setSelectedProfile}
