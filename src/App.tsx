@@ -41,7 +41,7 @@ function App() {
             setSelected(0);
             setProfiles([{
                 id: uuidv4(),
-                name: 1,
+                name: '1',
                 crop: {unit: '%', width: 30, aspect: 1},
                 active: true
             }]);
@@ -54,14 +54,14 @@ function App() {
 
         let p = [...profiles]
         p.forEach(prof => prof.active = false);
-        setProfiles(p.concat({id: uuidv4(), name: counter + 1, crop: fc, active: true}));
+        setProfiles(p.concat({id: uuidv4(), name: (counter + 1).toString(), crop: fc, active: true}));
         setCounter(counter + 1)
         setSelected(profiles.length)
     }
 
     const resetProfiles: resetProfiles = () => {
         setCounter(1);
-        setProfiles([{id: uuidv4(), name: 1, crop: crop, active: true}]);
+        setProfiles([{id: uuidv4(), name: '1', crop: crop, active: true}]);
         setSelected(0);
     }
 

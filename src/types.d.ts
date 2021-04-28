@@ -3,7 +3,7 @@ import {ChangeEvent} from "react";
 
 interface ProfileData {
     id: string
-    name: string | number
+    name: string
     crop: Crop
     active: boolean
 }

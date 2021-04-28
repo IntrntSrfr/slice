@@ -2,6 +2,7 @@ import React, {useEffect, useRef} from "react";
 
 import Button from './Button'
 import {ProfileData, removeProfile, setProfileName, setSelectedProfile} from "./types";
+import ProfileFooter from "./ProfileFooter";
 
 
 /*
@@ -124,16 +125,7 @@ function Profile(props: Props) {
                     style={getStyle()}
                 />
             </div>
-            <div className={'profile-footer'}>
-                <div className={'profile-name'}>
-                    Profile: <input type={'text'} value={props.profile.name}
-                                    onChange={(e) => props.setProfileName(e, id)}/>
-                </div>
-                <Button styles={'profile-remove-button'} text={'X'} onClick={() => props.removeProfile(id)}/>
-                {/*
-                <button className={'profile-remove-button'} onClick={props.removeProfile.bind(this, id)}>X</button>
-*/}
-            </div>
+            <ProfileFooter id={id} name={props.profile.name} setProfileName={props.setProfileName} removeProfile={props.removeProfile}/>
         </div>
     )
 }
