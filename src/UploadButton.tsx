@@ -3,9 +3,10 @@ import React, {ChangeEvent, useRef} from "react";
 
 //import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import Button from '@material-ui/core/Button'
+import {onFileSelect} from "./types";
 
 interface Props {
-    onSelect: (e: ChangeEvent<HTMLInputElement>) => void;
+    onSelect: onFileSelect;
 }
 
 function UploadButton(props: Props) {

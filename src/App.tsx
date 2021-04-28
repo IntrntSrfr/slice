@@ -16,7 +16,6 @@ import {
     setProfileName,
     setSelectedProfile
 } from "./types";
-
 function App() {
     let [src, setSrc] = useState<string | ArrayBuffer>();
     let [selected, setSelected] = useState(0);
@@ -79,12 +78,12 @@ function App() {
         setProfiles(p);
     }
 
-    const setProfileName:setProfileName = (id: string, newName: string) => {
+    const setProfileName:setProfileName = (e, id) => {
 
         let profs = [...profiles]
         profs.forEach(p => {
             if (p.id === id) {
-                p.name = newName
+                p.name = e.target.value
             }
         })
         setProfiles(profs)
@@ -164,7 +163,6 @@ function App() {
                     setProfileName={setProfileName}
                 />
             }
-
         </div>
     )
 }

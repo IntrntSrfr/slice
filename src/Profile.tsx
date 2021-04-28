@@ -127,12 +127,10 @@ function Profile(props: Props) {
             <div className={'profile-footer'}>
                 <div className={'profile-name'}>
                     Profile: <input type={'text'} value={props.profile.name}
-                                    onChange={e => props.setProfileName(id, e.target.value)}/>
+                                    onChange={(e) => props.setProfileName(e, id)}/>
                 </div>
-
-
+                <Button styles={'profile-remove-button'} text={'X'} onClick={() => props.removeProfile(id)}/>
                 {/*
-                <Button styles={'profile-remove-button'} text={'X'} onClick={props.removeProfile(id)}/>
                 <button className={'profile-remove-button'} onClick={props.removeProfile.bind(this, id)}>X</button>
 */}
             </div>
