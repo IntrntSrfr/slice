@@ -1,4 +1,4 @@
-![Logo](./assets/slice.png)
+![Header image](./assets/slice.png)
 
 # Slice
 
