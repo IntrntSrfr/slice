@@ -10,7 +10,7 @@ interface ProfileData {
 
 type addProfile = () => void;
 type newProfile = () => void;
-type removeProfile = (id:string) => void;
+type removeProfile = (id: string) => void;
 type setProfileName = (e: ChangeEvent<HTMLInputElement>, id: string) => void;
 type setSelectedProfile = (id: string) => void;
 type resetProfiles = () => void;

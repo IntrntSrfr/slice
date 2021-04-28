@@ -118,7 +118,7 @@ function Profile(props: Props) {
 
     return (
         <div className={`profile ${props.profile.active ? 'active' : ''}`}>
-            <div onClick={()=>props.setSelectedProfile(id)}>
+            <div onClick={() => props.setSelectedProfile(id)}>
                 <canvas
                     ref={previewCanvasRef}
                     style={getStyle()}

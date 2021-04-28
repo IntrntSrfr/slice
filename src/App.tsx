@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useRef, useState} from "react";
+import React, {useRef, useState} from "react";
 
 import ReactCrop, {Crop} from "react-image-crop";
 import 'react-image-crop/dist/ReactCrop.css';
@@ -16,6 +16,7 @@ import {
     setProfileName,
     setSelectedProfile
 } from "./types";
+
 function App() {
     let [src, setSrc] = useState<string | ArrayBuffer>();
     let [selected, setSelected] = useState(0);
@@ -27,7 +28,7 @@ function App() {
     const [crop, setCrop] = useState<Crop>({unit: '%', width: 30, aspect: 1});
     const imgRef = useRef<HTMLImageElement | null>(null);
 
-    const onSelectFile:onFileSelect = (e) => {
+    const onSelectFile: onFileSelect = (e) => {
         if (e.target.files && e.target.files.length > 0) {
             const reader = new FileReader();
             reader.addEventListener("load", () => {
@@ -48,7 +49,7 @@ function App() {
         }
     }
 
-    const addProfile:addProfile= () =>  {
+    const addProfile: addProfile = () => {
         let fc = profiles[selected].crop
 
         let p = [...profiles]
@@ -58,13 +59,13 @@ function App() {
         setSelected(profiles.length)
     }
 
-    const resetProfiles:resetProfiles = () => {
+    const resetProfiles: resetProfiles = () => {
         setCounter(1);
         setProfiles([{id: uuidv4(), name: 1, crop: crop, active: true}]);
         setSelected(0);
     }
 
-    const setSelectedProfile:setSelectedProfile = (id: string) => {
+    const setSelectedProfile: setSelectedProfile = (id: string) => {
         let p = [...profiles]
         p.forEach((prof, i) => {
             if (prof.id === id) {
@@ -78,7 +79,7 @@ function App() {
         setProfiles(p);
     }
 
-    const setProfileName:setProfileName = (e, id) => {
+    const setProfileName: setProfileName = (e, id) => {
 
         let profs = [...profiles]
         profs.forEach(p => {
@@ -89,7 +90,7 @@ function App() {
         setProfiles(profs)
     }
 
-    const removeProfile:removeProfile = (id: string) =>{
+    const removeProfile: removeProfile = (id: string) => {
         if (profiles.length > 1) {
 
             let foundIndex = profiles.findIndex(p => p.id === id)
@@ -120,7 +121,7 @@ function App() {
         }
     }
 
-    function updateCrop(crop: Crop)  {
+    function updateCrop(crop: Crop) {
         setCrop(crop)
         let p = [...profiles];
         if (!p[selected]) return
