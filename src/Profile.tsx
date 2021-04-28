@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from "react";
+import React, {RefObject, useEffect, useRef} from "react";
 
 import Button from './Button'
 import {ProfileData, removeProfile, setProfileName, setSelectedProfile} from "./types";
@@ -36,6 +36,8 @@ function Profile(props: Props) {
 
     const previewCanvasRef = useRef<HTMLCanvasElement>(null);
     //let [name, setName] = useState(('Profile '+id))
+
+    props.profile.reference = previewCanvasRef
 
     useEffect(() => {
         if (!props.profile.crop || !previewCanvasRef.current || !imgRef.current) {
@@ -86,6 +88,10 @@ function Profile(props: Props) {
             display: 'flex',
             transition: '0.1s'
         }
+    }
+
+    function getPreviewCanvasRef():RefObject<HTMLCanvasElement>{
+        return previewCanvasRef;
     }
 
     function generateDownload() {

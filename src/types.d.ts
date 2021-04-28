@@ -1,11 +1,12 @@
 import {Crop} from "react-image-crop";
-import {ChangeEvent} from "react";
+import {ChangeEvent, RefObject} from "react";
 
 interface ProfileData {
     id: string
     name: string
     crop: Crop
     active: boolean
+    reference?: RefObject<HTMLCanvasElement>
 }
 
 type addProfile = () => void;

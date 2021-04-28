@@ -1,7 +1,9 @@
 import Profile from './Profile'
 import {Button, ButtonGroup} from "@material-ui/core";
-import React, {useState} from "react";
+import React, {RefObject, useState} from "react";
 import {newProfile, ProfileData, removeProfile, resetProfiles, setProfileName, setSelectedProfile} from "./types";
+import JSZip from "jszip";
+import FileSaver from "file-saver";
 
 interface Props {
     newProfile: newProfile;
@@ -15,10 +17,37 @@ interface Props {
     imgRef: React.RefObject<HTMLImageElement>
 }
 
-function ProfileManager(props: Props) {
+export const ProfileManager: React.FC<Props> = (props) => {
     const [round, setRound] = useState(true);
 
-    function generateDownload() {
+    function downloadImages() {
+
+        props.profiles.forEach(prof =>{
+            if(!prof.reference || !prof.reference.current){
+                return
+            }
+            //console.log(prof.reference?.current)
+            let canvas = prof.reference.current
+
+            canvas.toBlob((blob)=> {
+                if(!blob){
+                    return
+                }
+                FileSaver.saveAs(blob, `${prof.name}.png`)
+            }, 'image/png', 0)
+        })
+        /*
+
+        console.log(zip.files)
+
+        zip.generateAsync({type:'blob'})
+            .then((content)=>{
+                FileSaver.saveAs(content, 'pictures.zip')
+            })
+*/
+
+
+
 
     }
 
@@ -31,7 +60,7 @@ function ProfileManager(props: Props) {
                     setRound(!round)
                 }}>Toggle square preview</Button>
                 <Button onClick={() => {
-                    console.log("export lol")
+                    downloadImages()
                 }}>Export profiles</Button>
             </ButtonGroup>
             <div className={'profiles'}>
