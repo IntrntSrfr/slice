@@ -1,8 +1,7 @@
 import Profile from './Profile'
 import {Button, ButtonGroup} from "@material-ui/core";
-import React, {RefObject, useState} from "react";
+import React, {useState} from "react";
 import {newProfile, ProfileData, removeProfile, resetProfiles, setProfileName, setSelectedProfile} from "./types";
-import JSZip from "jszip";
 import FileSaver from "file-saver";
 
 interface Props {

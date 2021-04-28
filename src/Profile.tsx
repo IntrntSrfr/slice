@@ -1,23 +1,8 @@
-import React, {RefObject, useEffect, useRef} from "react";
+import React, {useEffect, useRef} from "react";
 
-import Button from './Button'
 import {ProfileData, removeProfile, setProfileName, setSelectedProfile} from "./types";
 import ProfileFooter from "./ProfileFooter";
 
-
-/*
-
-type Props= {
-    profile:ProfileData,
-    round:boolean
-
-    setSelectedProfile: MouseEventHandler
-    removeProfile: MouseEventHandler
-    setProfileName: ChangeEventHandler
-
-    imgRef: MutableRefObject<HTMLImageElement>
-}
-*/
 
 interface Props {
     profile: ProfileData;
@@ -31,11 +16,9 @@ interface Props {
 
 function Profile(props: Props) {
     let id = props.profile.id;
-    //let completeCrop = props.profile.crop;
     let imgRef = props.imgRef;
 
     const previewCanvasRef = useRef<HTMLCanvasElement>(null);
-    //let [name, setName] = useState(('Profile '+id))
 
     props.profile.reference = previewCanvasRef
 
@@ -74,12 +57,6 @@ function Profile(props: Props) {
         );
     }, [imgRef, props.profile.crop]);
 
-    /*
-
-        function getClassName() {
-            return props.profile.active ? "profile active" : "profile";
-        }
-    */
 
     function getStyle() {
         return {
@@ -89,39 +66,6 @@ function Profile(props: Props) {
             transition: '0.1s'
         }
     }
-
-    function getPreviewCanvasRef():RefObject<HTMLCanvasElement>{
-        return previewCanvasRef;
-    }
-
-    function generateDownload() {
-
-        if (!previewCanvasRef) return
-
-        let canvas = previewCanvasRef.current;
-
-
-        return new Promise((resolve, reject) => {
-            if (!canvas) return
-            canvas.toBlob(blob => {
-                resolve(blob)
-            }, 'image/png', 1)
-        })
-        /*
-                canvas.toBlob(blob => {
-                    const url = window.URL.createObjectURL(blob);
-
-
-                    const anchor = document.createElement('a');
-                    anchor.download = `${props.profile.name}.png`;
-                    anchor.href = URL.createObjectURL(blob);
-                    anchor.click();
-
-                    window.URL.revokeObjectURL(url);
-                }, "image/png", 1);
-                */
-    }
-
 
     return (
         <div className={`profile ${props.profile.active ? 'active' : ''}`}>
