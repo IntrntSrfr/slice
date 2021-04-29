@@ -12,7 +12,7 @@ interface Props {
 function UploadButton(props: Props) {
     const inpRef = useRef<HTMLInputElement>(null)
     return (
-        <div>
+        <div style={{display:'inline-block'}}>
             <Button
                 onClick={() => {
                     if (inpRef && inpRef.current) {

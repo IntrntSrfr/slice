@@ -55,7 +55,8 @@ code {
     float: left;
 }
 
-.header-container {
+#header {
+    height: 35px;
     margin-bottom: 25px;
     margin-left: 10%;
     width: 80%;
@@ -63,6 +64,26 @@ code {
     padding: 15px;
     border-radius: 2px;
     box-shadow: 0 0 15px 0 #222;
+}
+#header img{
+    float:left;
+    height: 100%;
+}
+
+.header-element{
+    float:right;
+}
+
+.header-element button{
+
+    margin-left: 5px;
+    color: white;
+    height: 35px;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    background-color: #495975;
+    border-radius: 2px;
 }
 
 .profile-manager {

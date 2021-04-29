@@ -17,6 +17,8 @@ import {
     setSelectedProfile
 } from "./types";
 
+import logo from './assets/whiteslice.png'
+
 function App() {
     let [src, setSrc] = useState<string | ArrayBuffer>();
     let [selected, setSelected] = useState(0);
@@ -131,13 +133,19 @@ function App() {
 
     return (
         <div id={'main'}>
-            <div className={'header-container'}>
+            <div id={'header'}>
+                <img src={logo} alt={'logo'}/>
                 <UploadButton
                     onSelect={onSelectFile}
                 />
+                <div className={'header-element'}>
+                    <button onClick={()=>document.location.href='https://paypal.me/intrntsrfr'}>Donate!</button>
+                </div>
+                <div className={'header-element'}>
+                    <button onClick={()=>document.location.href='https://github.com/intrntsrfr/slice'}>Github</button>
+                </div>
             </div>
             {
-                //imgRef.current &&
                 <div className={'crop-container'}>
                     <ReactCrop
                         src={(src as string)}
