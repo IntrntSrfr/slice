@@ -153,6 +153,7 @@ function App() {
                         onChange={(c: Crop) => setCrop(c)}
                         //onChange={updateCrop}
                         ruleOfThirds
+                        circularCrop={true}
                         onImageLoaded={(img) => {
                             imgRef.current = img;
                         }}
