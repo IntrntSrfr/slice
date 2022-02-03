@@ -17,7 +17,7 @@ import {
     setSelectedProfile
 } from "./types";
 
-import logo from './assets/whiteslice.png'
+import logo from './assets/slice_small.png'
 
 function App() {
     let [src, setSrc] = useState<string | ArrayBuffer>();
@@ -43,11 +43,12 @@ function App() {
             setSelected(0);
             setProfiles([{
                 id: uuidv4(),
-                name: '1',
+                name: 'Profile 1',
                 crop: {unit: '%', width: 30, aspect: 1},
                 active: true
             }]);
-            setCounter(1)
+            setCounter(1);
+
         }
     }
 
@@ -55,15 +56,16 @@ function App() {
         let fc = profiles[selected].crop
 
         let p = [...profiles]
+        let newProfile = {id: uuidv4(), name: `Profile ${counter + 1}`, crop: fc, active: true}
         p.forEach(prof => prof.active = false);
-        setProfiles(p.concat({id: uuidv4(), name: (counter + 1).toString(), crop: fc, active: true}));
+        setProfiles([newProfile, ...p]);
         setCounter(counter + 1)
-        setSelected(profiles.length)
+        setSelected(0)
     }
 
     const resetProfiles: resetProfiles = () => {
         setCounter(1);
-        setProfiles([{id: uuidv4(), name: '1', crop: crop, active: true}]);
+        setProfiles([{id: uuidv4(), name: 'Profile 1', crop: crop, active: true}]);
         setSelected(0);
     }
 
@@ -124,6 +126,7 @@ function App() {
     }
 
     function updateCrop(crop: Crop) {
+        console.log(crop)
         setCrop(crop)
         let p = [...profiles];
         if (!p[selected]) return
@@ -132,38 +135,32 @@ function App() {
     }
 
     return (
-        <div id={'main'}>
-            <div id={'header'}>
-                <img src={logo} alt={'logo'}/>
-                <UploadButton
-                    onSelect={onSelectFile}
+        <div className={'main'}>
+            <div className={'crop-container'}>
+                <ReactCrop
+                    minHeight={25}
+                    minWidth={25}
+                    src={(src as string)}
+                    crop={crop}
+                    //onChange={(c: Crop) => setCrop(c)}
+                    onChange={updateCrop}
+                    ruleOfThirds
+                    circularCrop={true}
+                    onImageLoaded={(img) => {
+                        imgRef.current = img;
+                    }}
+                    onComplete={updateCrop}
                 />
-                <div className={'header-element'}>
-                    <button onClick={()=>document.location.href='https://paypal.me/intrntsrfr'}>Donate!</button>
-                </div>
-                <div className={'header-element'}>
-                    <button onClick={()=>document.location.href='https://github.com/intrntsrfr/slice'}>Github</button>
-                </div>
             </div>
-            {
-                <div className={'crop-container'}>
-                    <ReactCrop
-                        src={(src as string)}
-                        crop={crop}
-                        onChange={(c: Crop) => setCrop(c)}
-                        //onChange={updateCrop}
-                        ruleOfThirds
-                        circularCrop={true}
-                        onImageLoaded={(img) => {
-                            imgRef.current = img;
-                        }}
-                        onComplete={updateCrop}
+            <div className={'control-panel'}>
+                <div className={'header'}>
+                    <UploadButton
+                        onSelect={onSelectFile}
                     />
+                    <img src={logo} alt={'logo'}/>
                 </div>
-            }
-            {
-                src &&
                 <ProfileManager
+                    src={src as string}
                     imgRef={imgRef}
                     profiles={profiles}
                     removeProfile={removeProfile}
@@ -172,7 +169,13 @@ function App() {
                     setSelectedProfile={setSelectedProfile}
                     setProfileName={setProfileName}
                 />
-            }
+                <div className={"footer"}>
+                    <div className={"btn-group"}>
+                        <a  className={'btn btn-small'} href={'https://paypal.me/intrntsrfr'} target={'_blank'} rel="noreferrer">Donate</a>
+                        <a  className={'btn btn-small'} href={'https://github.com/intrntsrfr/slice'} target={'_blank'} rel="noreferrer">Github</a>
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }

@@ -30,12 +30,11 @@ function Profile(props: Props) {
         const canvas = previewCanvasRef.current;
         const crop = props.profile.crop;
 
-        const scaleX = image.naturalWidth / image.width;
-        const scaleY = image.naturalHeight / image.height;
         const ctx = canvas.getContext("2d");
         if (!ctx) {
             return
         }
+
         const pixelRatio = window.devicePixelRatio;
 
         canvas.width = crop.width! * pixelRatio;
@@ -43,6 +42,10 @@ function Profile(props: Props) {
 
         ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
         ctx.imageSmoothingQuality = 'high';
+
+
+        const scaleX = image.naturalWidth / image.width;
+        const scaleY = image.naturalHeight / image.height;
 
         ctx.drawImage(
             image,
@@ -61,6 +64,7 @@ function Profile(props: Props) {
     function getStyle() {
         return {
             height: '160px',
+            width: '160px',
             borderRadius: props.round ? '50%' : '2px',
             display: 'flex',
             transition: '0.1s'
