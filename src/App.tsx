@@ -170,7 +170,7 @@ function App() {
                     setProfileName={setProfileName}
                 />
                 <div className={"footer"}>
-                    <div className={"btn-group"}>
+                    <div className={"btn-group no-wrap"}>
                         <a  className={'btn btn-small'} href={'https://paypal.me/intrntsrfr'} target={'_blank'} rel="noreferrer">Donate</a>
                         <a  className={'btn btn-small'} href={'https://github.com/intrntsrfr/slice'} target={'_blank'} rel="noreferrer">Github</a>
                     </div>

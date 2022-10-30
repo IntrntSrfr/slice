@@ -43,7 +43,6 @@ function Profile(props: Props) {
         ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
         ctx.imageSmoothingQuality = 'high';
 
-
         const scaleX = image.naturalWidth / image.width;
         const scaleY = image.naturalHeight / image.height;
 

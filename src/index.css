@@ -121,12 +121,14 @@ code {
 }
 
 .profile-name input{
+    position: relative;
     color: #e1e1e1;
     padding: 0.25em 0.5em;
     background-color: transparent;
     border: none;
     border-bottom: 2px solid var(--accent-1);
 }
+
 
 .profile-footer {
     display: flex;
@@ -139,6 +141,10 @@ code {
     padding: 5px;
     background-color: rgba(0, 0, 0, 0.3);
     */
+}
+
+.btn-group.no-wrap{
+    flex-wrap: nowrap;
 }
 
 .btn-group{
@@ -167,7 +173,7 @@ code {
 }
 
 .btn-small{
-    padding: 0;
+    padding: .25em .75em;
 }
 
 .btn-red{
