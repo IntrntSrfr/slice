@@ -2,13 +2,14 @@ import Button from "./Button"
 import Checkbox from "./Checkbox"
 import ProfileListItem from "./ProfileListItem"
 import {useAtom} from 'jotai'
-import { profilesAtom } from "../store"
+import { profilesAtom, sourceAtom } from "../store"
 import { useState } from "react"
 import styles from './styles/ProfileList.module.css'
 import { v4 } from "uuid"
 
 const ProfileList = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom)
+    const [source, ] = useAtom(sourceAtom)
     const [rounded, setRounded] = useState(false)
 
     const toggleRound = () => {
@@ -34,6 +35,7 @@ const ProfileList = () => {
     
     return (
         <div className={styles.profileList}>
+            {source && 
             <div className={styles.profileListInner}>
                 <h2>Profiles</h2>
                 <div className={styles.profiles}>
@@ -48,6 +50,7 @@ const ProfileList = () => {
                     <Button text="Export profiles" variant="green" />
                 </div>
             </div>
+            }
         </div>
     )
 }
