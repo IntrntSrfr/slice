@@ -1,18 +1,9 @@
 import {Crop} from "react-image-crop";
-import {ChangeEvent, RefObject} from "react";
 
-interface ProfileData {
+type Profile = {
     id: string
     name: string
-    crop: Crop
     active: boolean
-    reference?: RefObject<HTMLCanvasElement>
+    crop: Partial<Omit<Crop>>
 }
-
-type addProfile = () => void;
-type newProfile = () => void;
-type removeProfile = (id: string) => void;
-type setProfileName = (e: ChangeEvent<HTMLInputElement>, id: string) => void;
-type setSelectedProfile = (id: string) => void;
-type resetProfiles = () => void;
-type onFileSelect = (e: ChangeEvent<HTMLInputElement>) => void
+  

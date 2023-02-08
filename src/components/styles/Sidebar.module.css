@@ -1,0 +1,16 @@
+.sidebar{
+    display: flex;
+    flex-direction: column;
+    width: 30em;
+    height: 100vh;
+    background-color: #1d1e30;
+}
+
+.header{
+    padding: 1em;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.footer{
+    border-top: 1px solid var(--color-border);
+}

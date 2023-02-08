@@ -1,0 +1,31 @@
+.h2 {
+    text-align: center;
+    font-size: 1.5rem;
+    color: rgb(231, 231, 231);
+}
+
+.profileList {
+    padding: 1em;
+}
+
+.profileList,
+.profileListInner {
+    display: flex;
+    flex-direction: column;
+}
+
+.profileList,
+.profileListInner,
+.profiles {
+    flex-grow: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.profiles {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    margin: 1em 0;
+}

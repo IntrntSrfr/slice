@@ -1,47 +1,34 @@
 {
-  "name": "slice",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@types/jest": "^26.0.23",
-    "@types/node": "^12.20.11",
-    "@types/react": "^17.0.4",
-    "@types/react-dom": "^17.0.3",
-    "@types/react-image-crop": "^8.1.2",
-    "@types/uuid": "^8.3.0",
-    "file-saver": "^2.0.5",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-image-crop": "^8.6.9",
-    "react-scripts": "^5.0.0",
-    "typescript": "^4.2.4",
-    "uuid": "^8.3.2"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "@types/file-saver": "^2.0.2"
+    "name": "slice",
+    "private": true,
+    "version": "0.2.0",
+    "type": "module",
+    "scripts": {
+      "dev": "vite",
+      "build": "tsc && vite build",
+      "preview": "vite preview"
+    },
+    "dependencies": {
+      "@types/file-saver": "^2.0.5",
+      "@types/react-image-crop": "^8.1.3",
+      "@types/uuid": "^9.0.0",
+      "file-saver": "^2.0.5",
+      "install": "^0.13.0",
+      "jotai": "^2.0.0",
+      "npm": "^9.4.1",
+      "react": "^18.2.0",
+      "react-dom": "^18.2.0",
+      "react-image-crop": "^10.0.9",
+      "uuid": "^9.0.0"
+    },
+    "devDependencies": {
+      "@types/node": "^18.13.0",
+      "@types/react": "^18.0.27",
+      "@types/react-dom": "^18.0.10",
+      "@vitejs/plugin-react-swc": "^3.0.0",
+      "typescript": "^4.9.3",
+      "typescript-plugin-css-modules": "^4.1.1",
+      "vite": "^4.1.0"
+    }
   }
-}
+  

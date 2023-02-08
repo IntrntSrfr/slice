@@ -1,0 +1,29 @@
+.profile {
+    display: flex;
+    flex-direction: row;
+    border-radius: 5px;
+}
+
+.profileCanvas {
+    height: 120px;
+    width: 120px;
+    border-radius: 5px;
+    display: flex;
+    transition: 0.1s;
+}
+
+.rounded {
+    border-radius: 50%;
+}
+
+.profileInfo {
+    background-color: #494A5E;
+    margin-left: .25em;
+    border-radius: 5px;
+    flex: 1 0 auto;
+    border-left: 1px solid rgba(73, 74, 94, 0.627);
+}
+
+.active .profileInfo {
+    background-color: #6d6e86;
+}

@@ -1,0 +1,12 @@
+@import './index.css';
+
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.crop-container {
+    width: 100%;
+    padding: 1em;
+}
