@@ -7,6 +7,10 @@
 }
 
 .crop-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-height: calc(100vh - 2em);
     width: 100%;
     padding: 1em;
 }

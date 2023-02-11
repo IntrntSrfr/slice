@@ -134,7 +134,7 @@ const App = () => {
                         onChange={updateCrop}
                         ruleOfThirds
                         circularCrop
-                        style={{}}
+                        style={{maxHeight: 'inherit'}}
                         >
                         <img src={source.src} onLoad={onImageLoad} />
                     </ReactCrop>
