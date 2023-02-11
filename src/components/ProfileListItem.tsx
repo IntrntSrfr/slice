@@ -21,13 +21,14 @@ const ProfileListItem = (props: Props) => {
         if (!ctx) return;
 
         let img = source
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.width)
         ctx.drawImage(
             img, 
             source.width * props.crop.x/ 100, 
             source.height * props.crop.y / 100, 
             source.width * props.crop.width / 100, 
             source.height * props.crop.height / 100, 
-            0, 0, canvasRef.current.width, canvasRef.current.height)
+            0, 0, ctx.canvas.width, ctx.canvas.height)
     }, [props.crop])
 
     return (
