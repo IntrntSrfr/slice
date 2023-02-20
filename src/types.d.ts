@@ -1,4 +1,4 @@
-import {Crop} from "react-image-crop";
+import { Crop } from "react-image-crop";
 
 type Profile = {
     id: string
@@ -6,4 +6,3 @@ type Profile = {
     active: boolean
     crop: Partial<Omit<Crop>>
 }
-  

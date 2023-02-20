@@ -1,7 +1,7 @@
-import { useAtom } from 'jotai'
 import { ChangeEvent, useEffect, useRef } from 'react'
 import { Crop } from 'react-image-crop'
-import { profilesAtom, sourceAtom } from '../store'
+import { useAtom } from 'jotai'
+import { sourceAtom } from '../store'
 import Button from './Button'
 import styles from './styles/ProfileListItem.module.css'
 
@@ -28,11 +28,11 @@ const ProfileListItem = (props: Props) => {
         let img = source
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.width)
         ctx.drawImage(
-            img, 
-            source.width * props.crop.x / 100, 
-            source.height * props.crop.y / 100, 
-            source.width * props.crop.width / 100, 
-            source.height * props.crop.height / 100, 
+            img,
+            source.width * props.crop.x / 100,
+            source.height * props.crop.y / 100,
+            source.width * props.crop.width / 100,
+            source.height * props.crop.height / 100,
             0, 0, ctx.canvas.width, ctx.canvas.height)
     }, [props.crop])
 
@@ -45,23 +45,14 @@ const ProfileListItem = (props: Props) => {
                     height="300"
                     width="300"
                 />
-                <input type="text" className={styles.profileName} value={props.name} onChange={props.onRename}/>
+                <input type="text" className={styles.profileName} value={props.name} onChange={props.onRename} />
             </div>
             <div className={styles.profileInfo}>
-                <Button text='Select' /* style={{backgroundColor: 'rgb(0, 109, 218)'}}  */variant={'blue'} onClick={props.onSelect}/>
-                <Button text='Delete'/*  style={{backgroundColor: 'rgb(179, 44, 44)'}}  */variant={'red'} onClick={props.onDelete}/>
+                <Button text='Select' variant={'blue'} onClick={props.onSelect} />
+                <Button text='Delete' variant={'red'} onClick={props.onDelete} />
             </div>
         </div>
     )
 }
-
-/* 
-
-            <div className={styles.profileInfo}>
-                <input type="text" className={styles.profileName} value={props.name} onChange={props.onRename}/>
-            </div>
-*/
-
-//{/* <!--<img v-if="image" :src="image" alt="" :className="{ rounded: rounded }">--> */}
 
 export default ProfileListItem

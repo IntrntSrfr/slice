@@ -1,4 +1,4 @@
-import { createStore, atom } from "jotai";
+import { atom } from "jotai";
 import { Profile } from "./types";
 
 export const sourceAtom = atom<HTMLImageElement | null>(null)
