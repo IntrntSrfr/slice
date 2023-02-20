@@ -1,6 +1,6 @@
 import { CSSProperties } from "react"
 
-type ButtonType = 'blue' | 'green'
+type ButtonType = 'blue' | 'green' | 'red'
 
 interface Props {
     onClick?: () => void,

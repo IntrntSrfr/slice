@@ -2,6 +2,7 @@ import { useAtom } from 'jotai'
 import { ChangeEvent, useEffect, useRef } from 'react'
 import { Crop } from 'react-image-crop'
 import { profilesAtom, sourceAtom } from '../store'
+import Button from './Button'
 import styles from './styles/ProfileListItem.module.css'
 
 interface Props {
@@ -10,13 +11,14 @@ interface Props {
     active: boolean
     rounded: boolean
     crop: Crop,
-    onRename: (e: ChangeEvent<HTMLInputElement>) => void
+    onRename: (e: ChangeEvent<HTMLInputElement>) => void,
+    onSelect: () => void,
+    onDelete: () => void
 }
 
 const ProfileListItem = (props: Props) => {
     const [source,] = useAtom(sourceAtom)
     const canvasRef = useRef<HTMLCanvasElement>(null)
-    const [profiles, setProfiles] = useAtom(profilesAtom)
 
     useEffect(() => {
         if (!source || !canvasRef.current) return;
@@ -43,13 +45,22 @@ const ProfileListItem = (props: Props) => {
                     height="300"
                     width="300"
                 />
+                <input type="text" className={styles.profileName} value={props.name} onChange={props.onRename}/>
             </div>
             <div className={styles.profileInfo}>
-                <input type="text" className={styles.profileName} value={props.name} onChange={props.onRename}/>
+                <Button text='Select' /* style={{backgroundColor: 'rgb(0, 109, 218)'}}  */variant={'blue'} onClick={props.onSelect}/>
+                <Button text='Delete'/*  style={{backgroundColor: 'rgb(179, 44, 44)'}}  */variant={'red'} onClick={props.onDelete}/>
             </div>
         </div>
     )
 }
+
+/* 
+
+            <div className={styles.profileInfo}>
+                <input type="text" className={styles.profileName} value={props.name} onChange={props.onRename}/>
+            </div>
+*/
 
 //{/* <!--<img v-if="image" :src="image" alt="" :className="{ rounded: rounded }">--> */}
 

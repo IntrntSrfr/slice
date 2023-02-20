@@ -32,6 +32,16 @@ const ProfileList = () => {
         setProfiles([newProfile, ...p]);
     }
 
+    const removeProfile = (id: string) => {
+        if(profiles.length <= 1) return;
+        let profs = [...profiles]
+        // add some check if profile is active
+        // if deleting active profile, move active profile to nearest?
+        
+        profs = profs.filter(p => p.id !== id)
+        setProfiles(profs)
+    }
+
     const resetProfiles = () => {
         if(!source || profiles.length <= 1) return;
         let crop = centerCropImage(source)
@@ -50,6 +60,19 @@ const ProfileList = () => {
         setProfiles(profs)
     }
     
+    const setActiveProfile = (id: string) => {
+        let p = [...profiles]
+        p.forEach((prof) => {
+            if (prof.id === id) {
+                //setCrop(prof.crop);
+                prof.active = true;
+            } else {
+                prof.active = false;
+            }
+        });
+        setProfiles(p);
+    }
+
     return (
         <div className={styles.profileList}>
             {source && 
@@ -57,7 +80,15 @@ const ProfileList = () => {
                 <h2>Profiles</h2>
                 <div className={styles.profiles}>
                     {profiles.map((p, i) => (
-                        <ProfileListItem key={i} id={p.id} active={p.active} crop={p.crop} name={p.name} rounded={rounded} onRename={(e) => onRename(e, p.id)}/>
+                        <ProfileListItem key={i} 
+                            id={p.id} 
+                            active={p.active} 
+                            crop={p.crop} 
+                            name={p.name} 
+                            rounded={rounded} 
+                            onRename={(e) => onRename(e, p.id)}
+                            onSelect={() => setActiveProfile(p.id)}
+                            onDelete={() => removeProfile(p.id)}/>
                     ))}
                 </div>
                 <div className="btn-grp fill-last fill-first">
