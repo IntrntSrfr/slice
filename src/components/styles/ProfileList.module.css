@@ -26,6 +26,6 @@
 .profiles {
     display: flex;
     flex-direction: column;
-    gap: 1em;
+    gap: .5em;
     margin: 1em 0;
 }

@@ -1,61 +1,36 @@
-import { useState } from "react";
+import { SyntheticEvent } from "react";
 
-import ReactCrop, { centerCrop, Crop, makeAspectCrop, PercentCrop } from "react-image-crop";
+import ReactCrop, { Crop, PercentCrop } from "react-image-crop";
 import 'react-image-crop/dist/ReactCrop.css';
-
-import { v4 } from "uuid";
 
 import Overlay from "./components/Overlay";
 import Sidebar from "./components/Sidebar";
 
 import './App.css'
-import { loadingAtom, profilesAtom, sourceAtom, sourceKeyAtom } from "./store";
+import { loadingAtom, profilesAtom, sourceAtom } from "./store";
 import { useAtom } from "jotai";
+import { centerCropImage } from "./utils/utils";
 
 const App = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom)
-    const [crop, setCrop] = useState<Crop>({ unit: '%', width: 30, aspect: 1 });
+    //const [crop, setCrop] = useState<Crop | undefined>(undefined);
 
     const activeProfile = () => {
         return profiles.find(p => p.active)
     }
 
-    const addProfile = () => {
-        let ap = activeProfile()
-        if (!ap) return;
-
-        let fc = ap.crop
-        let p = [...profiles]
-        let newProfile = { id: v4(), name: 'New profile', crop: fc, active: true }
-        p.forEach(prof => prof.active = false);
-        setProfiles([newProfile, ...p]);
-    }
-
-    const resetProfiles = () => {
-        setProfiles([{ id: v4(), name: 'New profile', crop: crop, active: true }]);
-    }
 
     const setActiveProfile = (id: string) => {
         let p = [...profiles]
         p.forEach((prof) => {
             if (prof.id === id) {
-                setCrop(prof.crop);
+                //setCrop(prof.crop);
                 prof.active = true;
             } else {
                 prof.active = false;
             }
         });
         setProfiles(p);
-    }
-
-    const setProfileName = (e, id) => {
-        let profs = [...profiles]
-        profs.forEach(p => {
-            if (p.id === id) {
-                p.name = e.target.value
-            }
-        })
-        setProfiles(profs)
     }
 
     const removeProfile = (id: string) => {
@@ -90,7 +65,6 @@ const App = () => {
     }
 
     function updateCrop(_crop: Partial<Crop>, percentCrop: PercentCrop) {
-        setCrop(percentCrop)
         let p = [...profiles];
         let active = p.find(p => p.active)
         if (!active) return;
@@ -98,22 +72,8 @@ const App = () => {
         setProfiles(p);
     }
 
-    function onImageLoad(e: any) {
-        const { naturalWidth: width, naturalHeight: height } = e.currentTarget;
-
-        const crop = centerCrop(
-            makeAspectCrop({
-                unit: '%',
-                width: 25,
-            },
-                1,
-                width,
-                height
-            ),
-            width,
-            height
-        )
-
+    function onImageLoad(e: SyntheticEvent<HTMLImageElement>) {
+        const crop = centerCropImage(e.currentTarget)
         updateCrop({}, crop)
         setLoading(false)
     }
@@ -130,13 +90,13 @@ const App = () => {
                         aspect={1}
                         minHeight={64}
                         minWidth={64}
-                        crop={crop}
+                        crop={activeProfile()?.crop}
                         onChange={updateCrop}
                         ruleOfThirds
                         circularCrop
                         style={{maxHeight: 'inherit'}}
                         >
-                        <img src={source.src} onLoad={onImageLoad} />
+                            <img src={source.src} onLoad={onImageLoad} />
                     </ReactCrop>
                 }
             </div>
