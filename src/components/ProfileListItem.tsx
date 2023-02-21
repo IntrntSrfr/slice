@@ -42,14 +42,16 @@ const ProfileListItem = (props: Props) => {
                 <canvas
                     ref={canvasRef}
                     className={`${styles.profileCanvas} ${props.rounded ? styles.rounded : ''}`}
-                    height="300"
-                    width="300"
+                    height="256"
+                    width="256"
                 />
-                <input type="text" className={styles.profileName} value={props.name} onChange={props.onRename} />
+                <div className={styles.profileName}>
+                    <input type="text" value={props.name} onChange={props.onRename} />
+                </div>
             </div>
             <div className={styles.profileInfo}>
-                <Button text='Select' variant={'blue'} onClick={props.onSelect} />
-                <Button text='Delete' variant={'red'} onClick={props.onDelete} />
+                <Button text={props.active ? 'Selected' : 'Select'} variant={'blue'} filled onClick={props.onSelect} />
+                <Button text='Delete' variant={'red'} filled onClick={props.onDelete} />
             </div>
         </div>
     )
