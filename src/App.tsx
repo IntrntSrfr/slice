@@ -19,6 +19,7 @@ const App = () => {
     }
 
     function updateCrop(_crop: Partial<Crop>, percentCrop: PercentCrop) {
+        if (!percentCrop.height || !percentCrop.width) return;
         let p = [...profiles];
         let active = p.find(p => p.active)
         if (!active) return;
