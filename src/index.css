@@ -89,6 +89,7 @@ button{
     border-radius: 5px;
     cursor: pointer;
     transition: 0.2s;
+    user-select: none;
 }
 
 .red {
@@ -139,7 +140,7 @@ button{
     gap: .25em;
 }
 
-.btn-grp.fill-last>*:first-child {
+.btn-grp.fill-first>*:first-child {
     grid-column: span 2;
 }
 

@@ -14,9 +14,14 @@ const ProfileList = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom)
     const [source,] = useAtom(sourceAtom)
     const [rounded, setRounded] = useState(false)
+    const [smallPreviews, setSmallPreviews] = useState(false)
 
     const toggleRound = () => {
         setRounded(!rounded)
+    }
+
+    const toggleSmallPreviews = () => {
+        setSmallPreviews(!smallPreviews)
     }
 
     const activeProfile = () => {
@@ -99,13 +104,15 @@ const ProfileList = () => {
                                 crop={p.crop}
                                 name={p.name}
                                 rounded={rounded}
+                                smallPreviews={smallPreviews}
                                 onRename={(e) => onRename(e, p.id)}
                                 onSelect={() => setActiveProfile(p.id)}
                                 onDelete={() => removeProfile(p.id)} />
                         ))}
                     </div>
-                    <div className="btn-grp fill-last fill-first">
+                    <div className="btn-grp fill-last">
                         <Checkbox checked={rounded} label={"Round preview"} onChange={toggleRound} />
+                        <Checkbox checked={smallPreviews} label={"Small previews"} onChange={toggleSmallPreviews} />
                         <Button text="Add profile" variant="blue" onClick={addProfile} />
                         <Button text="Reset profiles" variant="blue" onClick={resetProfiles} />
                         <Button text="Export profiles" variant="green" onClick={exportProfiles} />

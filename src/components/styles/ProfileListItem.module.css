@@ -14,6 +14,7 @@
 }
 
 .profileCrop{
+  position: relative;
 }
 
 .profileName {
@@ -26,6 +27,29 @@
     
     border-bottom-left-radius: 5px;
     border-top: 1px solid #494A5E;
+}
+
+.miniPreviews {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5em;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.miniPreviews > canvas {
+  transition: 0.1s;
+}
+
+.profileCanvasSmall{
+  height: 48px;
+  width: 48px;
+}
+
+.profileCanvasSmaller{
+  height: 32px;
+  width: 32px;
 }
 
 .profileName::after{

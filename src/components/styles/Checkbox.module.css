@@ -13,4 +13,5 @@
     border-radius: 5px;
     cursor: pointer;
     transition: 0.2s;
+    user-select: none;
 }
