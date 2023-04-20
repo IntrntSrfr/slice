@@ -22,3 +22,6 @@ also welcome!
 * Add different profiles that can be cropped respectively
 * Get a preview of your crops, both square and circular previews
 * Download your cropped images!
+
+## Preview
+![Preview](./assets/preview.gif)
