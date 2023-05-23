@@ -14,3 +14,16 @@
     width: 100%;
     padding: 1em;
 }
+
+.flex{
+    display: flex;
+    gap: .5em;
+}
+
+.rows{
+    flex-direction: row;   
+}
+
+.cols{
+    flex-direction: column;   
+}

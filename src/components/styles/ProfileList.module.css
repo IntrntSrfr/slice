@@ -4,6 +4,18 @@
     color: rgb(231, 231, 231);
 }
 
+.listHeader {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.listHeader > :first-child{
+    margin-right: auto;
+    margin-left: 1em;
+}
+
 .profileList {
     padding: 1em;
 }

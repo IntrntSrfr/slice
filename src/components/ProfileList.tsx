@@ -95,7 +95,13 @@ const ProfileList = () => {
         <div className={styles.profileList}>
             {source &&
                 <div className={styles.profileListInner}>
-                    <h2>Profiles</h2>
+                    <div className={styles.listHeader}>
+                        <h2>Profiles</h2>
+                        <div className="flex rows">
+                            <Button text="Add" variant="blue" onClick={addProfile} />
+                            <Button text="Reset" variant="red" onClick={resetProfiles} />
+                        </div>
+                    </div>
                     <div className={styles.profiles}>
                         {profiles.map((p, i) => (
                             <ProfileListItem key={i}
@@ -113,8 +119,6 @@ const ProfileList = () => {
                     <div className="btn-grp fill-last">
                         <Checkbox checked={rounded} label={"Round preview"} onChange={toggleRound} />
                         <Checkbox checked={smallPreviews} label={"Small previews"} onChange={toggleSmallPreviews} />
-                        <Button text="Add profile" variant="blue" onClick={addProfile} />
-                        <Button text="Reset profiles" variant="blue" onClick={resetProfiles} />
                         <Button text="Export profiles" variant="green" onClick={exportProfiles} />
                     </div>
                 </div>
