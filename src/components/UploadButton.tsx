@@ -1,12 +1,14 @@
 import { useAtom } from "jotai";
 import { useRef, ChangeEvent } from "react";
-import { loadingAtom, profilesAtom, sourceAtom } from "../store";
+import { gifAtom, loadingAtom, profilesAtom, sourceAtom } from "../store";
 import { v4 } from "uuid";
+import { parseGIF } from 'gifuct-js'
 
 import Button from "./Button";
 
 function UploadButton() {
     const [, setSource] = useAtom(sourceAtom)
+    const [, setGif] = useAtom(gifAtom)
     const [, setProfiles] = useAtom(profilesAtom)
     const [, setLoading] = useAtom(loadingAtom)
     const inpRef = useRef<HTMLInputElement>(null)
@@ -16,20 +18,41 @@ function UploadButton() {
         inpRef.current.click()
     }
 
-    const uploadImage = (e: ChangeEvent<HTMLInputElement>) => {
+    const readFile = (fr: FileReader, f: File, t: 'DataURL' | 'ArrayBuffer') => {
+        return new Promise<ArrayBuffer | string | null>((res, rej) => {
+            fr.onload = () => res(fr.result)
+            fr.onerror = () => rej(fr.error)
+            if(t === 'DataURL')
+                fr.readAsDataURL(f)
+            else if (t === 'ArrayBuffer')
+                fr.readAsArrayBuffer(f)
+        })
+    }
+
+    const uploadImage = async (e: ChangeEvent<HTMLInputElement>) => {
         let inp = e.target as HTMLInputElement
         if (!inp.files?.length) return;
         setLoading(true)
 
-        let reader = new FileReader()
-        reader.onload = () => {
-            if (reader.result) {
-                let img = new Image()
-                img.src = reader.result as string
-                setSource(img)
+        const readerDataURL = new FileReader()
+        const readerArrayBuffer = new FileReader()
+        try {
+            let resDataURL = await readFile(readerDataURL, inp.files[0], 'DataURL')
+            let img = new Image()
+            img.src = resDataURL as string
+            setSource(img)
+            
+            if(inp.files[0].type === 'image/gif'){
+                let resArrayBuffer = await readFile(readerArrayBuffer, inp.files[0], 'ArrayBuffer')
+                let buf = resArrayBuffer as ArrayBuffer
+                let gif = parseGIF(buf)
+                setGif(gif)
             }
+        } catch (err: any) {
+            console.log(err);
+            return
         }
-        reader.readAsDataURL(inp.files[0])
+
         setProfiles([{
             id: v4(),
             name: 'New profile',
@@ -44,7 +67,7 @@ function UploadButton() {
             <input
                 ref={inpRef}
                 type={'file'}
-                accept={'image/jpeg, image/png'}
+                accept={'image/jpeg, image/png, image/gif'}
                 onChange={uploadImage}
                 style={{ display: 'none' }}
             />

@@ -1,7 +1,7 @@
 import { ChangeEvent, RefObject, useEffect, useRef } from 'react'
 import { Crop } from 'react-image-crop'
 import { useAtom } from 'jotai'
-import { sourceAtom } from '../store'
+import { gifAtom, sourceAtom } from '../store'
 import Button from './Button'
 import styles from './styles/ProfileListItem.module.css'
 
@@ -19,21 +19,39 @@ interface Props {
 
 const ProfileListItem = (props: Props) => {
   const [source,] = useAtom(sourceAtom)
+  const [gif,] = useAtom(gifAtom)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const canvasRefSmall = useRef<HTMLCanvasElement>(null)
   const canvasRefSmaller = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    drawCanvas(canvasRef)
-    if(props.smallPreviews)
-      [canvasRefSmall, canvasRefSmaller].forEach(c => drawCanvas(c))
+
+
+    
+    //gif?.header.
+    /* 
+    gif?.frames.forEach(frame => {
+        console.log(frame);
+    }) */
+
+    //drawCanvas(canvasRef)
+    if(props.smallPreviews) {
+        [canvasRefSmall, canvasRefSmaller].forEach(c => {
+            if(!canvasRef.current || !c.current) return;
+            let ctx = c.current.getContext('2d')
+            if(!ctx) return;
+            ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height)
+            ctx.drawImage(canvasRef.current, 0, 0, ctx.canvas.width, ctx.canvas.height)
+        });
+    }
+
+    return () => {}
   }, [props.crop, props.smallPreviews])
   
   const drawCanvas = (canvas: RefObject<HTMLCanvasElement>) => {
     if (!source || !canvas.current) return;
     let ctx = canvas.current.getContext('2d')
     if (!ctx) return;
-
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.width)
     ctx.drawImage(
       source,

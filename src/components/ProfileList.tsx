@@ -80,6 +80,7 @@ const ProfileList = () => {
         let crops = await generateBlobs(source, profiles)
         let nameMap = new Map<string, number>()
         crops.forEach(c => {
+            if(!c.blob) return;
             let fileName = c.name
             let n = nameMap.get(c.name)
             if (n) fileName += `_${n}`

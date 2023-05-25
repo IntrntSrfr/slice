@@ -18,10 +18,10 @@ export const centerCropImage = (img: HTMLImageElement): PercentCrop =>  {
     return crop
 }
 
-export const generateBlob = async (img: HTMLImageElement, crop: PercentCrop) => {
+export const generateBlob = async (img: HTMLImageElement, crop: PercentCrop): Promise<Blob|null> =>  {
     let canvas = document.createElement('canvas')
     let ctx = canvas.getContext('2d')
-    if(!ctx) return;
+    if(!ctx) throw new Error('Canvas 2D context is not available.');
 
     ctx.canvas.width = img.width * crop.width / 100
     ctx.canvas.height = img.height * crop.height / 100
@@ -37,7 +37,7 @@ export const generateBlob = async (img: HTMLImageElement, crop: PercentCrop) => 
 }
 
 interface blobPair {
-    blob: any,
+    blob: Blob | null,
     name: string
 }
 
