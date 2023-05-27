@@ -42,11 +42,13 @@ const ProfileList = () => {
     const removeProfile = (id: string) => {
         if (profiles.length <= 1) return;
         let profs = [...profiles]
+        let deletedActive = false;
         // add some check if profile is active
         // if deleting active profile, move active profile to nearest?
-
+        if (profs.filter(p => p.id === id)[0].active) deletedActive = true;
         profs = profs.filter(p => p.id !== id)
-        setProfiles(profs)
+        if (deletedActive) setActiveProfile(profs[0].id)
+        setProfiles(profs);
     }
 
     const resetProfiles = () => {
