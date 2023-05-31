@@ -1,8 +1,8 @@
-import { Crop } from "react-image-crop";
+import { type Crop } from 'react-image-crop';
 
-type Profile = {
-    id: string
-    name: string
-    active: boolean
-    crop: Partial<Omit<Crop>>
+interface Profile {
+  id: string
+  name: string
+  active: boolean
+  crop: Partial<Omit<Crop>>
 }

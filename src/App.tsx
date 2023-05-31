@@ -1,46 +1,46 @@
-import { SyntheticEvent } from "react";
+import { type SyntheticEvent } from 'react';
 
-import ReactCrop, { Crop, PercentCrop } from "react-image-crop";
+import ReactCrop, { type Crop, type PercentCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
-import Overlay from "./components/Overlay";
-import Sidebar from "./components/Sidebar";
+import Overlay from './components/Overlay';
+import Sidebar from './components/Sidebar';
 
-import './App.css'
-import { loadingAtom, profilesAtom, sourceAtom } from "./store";
-import { useAtom } from "jotai";
-import { centerCropImage } from "./utils/utils";
+import './App.css';
+import { loadingAtom, profilesAtom, sourceAtom } from './store';
+import { useAtom } from 'jotai';
+import { centerCropImage } from './utils/utils';
 
 const App = () => {
-    const [profiles, setProfiles] = useAtom(profilesAtom)
+  const [profiles, setProfiles] = useAtom(profilesAtom);
 
-    const activeProfile = () => {
-        return profiles.find(p => p.active)
-    }
+  const activeProfile = () => {
+    return profiles.find(p => p.active);
+  };
 
-    function updateCrop(_crop: Partial<Crop>, percentCrop: PercentCrop) {
-        if (!percentCrop.height || !percentCrop.width) return;
-        let p = [...profiles];
-        let active = p.find(p => p.active)
-        if (!active) return;
-        active.crop = percentCrop
-        setProfiles(p);
-    }
+  function updateCrop (_crop: Partial<Crop>, percentCrop: PercentCrop) {
+    if (!percentCrop.height || !percentCrop.width) return;
+    const p = [...profiles];
+    const active = p.find(p => p.active);
+    if (active == null) return;
+    active.crop = percentCrop;
+    setProfiles(p);
+  }
 
-    function onImageLoad(e: SyntheticEvent<HTMLImageElement>) {
-        const crop = centerCropImage(e.currentTarget)
-        updateCrop({}, crop)
-        setLoading(false)
-    }
+  function onImageLoad (e: SyntheticEvent<HTMLImageElement>) {
+    const crop = centerCropImage(e.currentTarget);
+    updateCrop({}, crop);
+    setLoading(false);
+  }
 
-    const [source, ] = useAtom(sourceAtom)
-    const [loading, setLoading] = useAtom(loadingAtom)
+  const [source] = useAtom(sourceAtom);
+  const [loading, setLoading] = useAtom(loadingAtom);
 
-    return (
+  return (
         <>
             <Overlay active={loading} />
             <div className="crop-container">
-                {source &&
+                {(source != null) &&
                     <ReactCrop
                         aspect={1}
                         minHeight={64}
@@ -57,7 +57,7 @@ const App = () => {
             </div>
             <Sidebar />
         </>
-    )
-}
+  );
+};
 
-export default App
+export default App;
