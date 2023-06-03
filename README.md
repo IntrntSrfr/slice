@@ -1,6 +1,6 @@
-![Header image](./assets/slice.png)
-
 # Slice
+
+![Header image](./assets/slice.png)
 
 A fast and easy collaboration cropping tool
 
@@ -11,11 +11,6 @@ There are tools out there that make it easy for singular profile pictures, but t
 cases of two or more profiles. The intended purpose for the cropped images are profile pictures, and because of that,
 it will only allow square crops.
 
-## Motivation
-
-As for personal reasons, this is my first ReactJS project. Due to that the code might be absolutely atrocious. Help is 
-also welcome!
-
 ## Features
 
 * Select any JPG/PNG image to crop
@@ -23,5 +18,23 @@ also welcome!
 * Get a preview of your crops, both square and circular previews
 * Download your cropped images!
 
-## Preview
 ![Preview](./assets/preview.gif)
+
+## Building
+
+1. **Clone the repo**
+
+        git clone https://github.com/IntrntSrfr/slice.git
+        cd slice
+
+1. **Install dependencies**
+
+        npm i
+
+1. **Run Slice**
+
+        npm run dev
+
+1. **Run lint**
+
+        npm run lint-fix
