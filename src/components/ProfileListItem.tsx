@@ -1,9 +1,9 @@
-import { ChangeEvent, RefObject, useEffect, useRef } from 'react'
-import { Crop } from 'react-image-crop'
-import { useAtom } from 'jotai'
-import { sourceAtom } from '../store'
-import Button from './Button'
-import styles from './styles/ProfileListItem.module.css'
+import { ChangeEvent, RefObject, useEffect, useRef } from 'react';
+import { Crop } from 'react-image-crop';
+import { useAtom } from 'jotai';
+import { sourceAtom } from '../store';
+import Button from './Button';
+import styles from './styles/ProfileListItem.module.css';
 
 interface Props {
   id: string,
@@ -18,31 +18,31 @@ interface Props {
 }
 
 const ProfileListItem = (props: Props) => {
-  const [source,] = useAtom(sourceAtom)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const canvasRefSmall = useRef<HTMLCanvasElement>(null)
-  const canvasRefSmaller = useRef<HTMLCanvasElement>(null)
+  const [source,] = useAtom(sourceAtom);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRefSmall = useRef<HTMLCanvasElement>(null);
+  const canvasRefSmaller = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    drawCanvas(canvasRef)
+    drawCanvas(canvasRef);
     if(props.smallPreviews)
-      [canvasRefSmall, canvasRefSmaller].forEach(c => drawCanvas(c))
-  }, [props.crop, props.smallPreviews])
+      [canvasRefSmall, canvasRefSmaller].forEach(c => drawCanvas(c));
+  }, [props.crop, props.smallPreviews]);
   
   const drawCanvas = (canvas: RefObject<HTMLCanvasElement>) => {
     if (!source || !canvas.current) return;
-    let ctx = canvas.current.getContext('2d')
+    const ctx = canvas.current.getContext('2d');
     if (!ctx) return;
 
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.width)
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.width);
     ctx.drawImage(
       source,
       source.width * props.crop.x / 100,
       source.height * props.crop.y / 100,
       source.width * props.crop.width / 100,
       source.height * props.crop.height / 100,
-      0, 0, ctx.canvas.width, ctx.canvas.height)
-  }
+      0, 0, ctx.canvas.width, ctx.canvas.height);
+  };
   
   return (
     <div className={`${styles.profile} ${props.active ? styles.active : ''}`}>
@@ -78,7 +78,7 @@ const ProfileListItem = (props: Props) => {
         <Button text='Delete' variant={'red'} filled onClick={props.onDelete} />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProfileListItem
+export default ProfileListItem;

@@ -1,4 +1,4 @@
-import styles from './styles/Checkbox.module.css'
+import styles from './styles/Checkbox.module.css';
 
 interface Props {
     label: string
@@ -12,7 +12,7 @@ const Checkbox = ({ label, checked, onChange }: Props) => {
             <input type="checkbox" name="check" checked={checked} readOnly />
             <label>{label}</label>
         </div>
-    )
-}
+    );
+};
 
-export default Checkbox
+export default Checkbox;

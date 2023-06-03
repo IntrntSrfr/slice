@@ -1,4 +1,4 @@
-import { CSSProperties } from "react"
+import { CSSProperties } from "react";
 
 type ButtonType = 'blue' | 'green' | 'red'
 
@@ -15,7 +15,7 @@ const Button = (props: Props) => {
         <button className={`btn ${props.variant} ${props.filled ? 'btn-filled' : ''}`} style={props.style} onClick={props.onClick}>
             {props.text}
         </button>
-    )
-}
+    );
+};
 
-export default Button
+export default Button;

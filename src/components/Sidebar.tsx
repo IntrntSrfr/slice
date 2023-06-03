@@ -1,6 +1,6 @@
-import ProfileList from "./ProfileList"
-import styles from './styles/Sidebar.module.css'
-import UploadButton from "./UploadButton"
+import ProfileList from "./ProfileList";
+import styles from './styles/Sidebar.module.css';
+import UploadButton from "./UploadButton";
 
 const Sidebar = () => {
   return (
@@ -16,7 +16,7 @@ const Sidebar = () => {
             </div>
         </footer>
     </div>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;
