@@ -5,6 +5,19 @@ import { sourceAtom } from '../store';
 import Button from './Button';
 import styles from './styles/ProfileListItem.module.css';
 
+
+interface DeleteProps {
+    onlyProfile: boolean,
+    onDelete: () => void
+}
+
+const DeleteButton = (props: DeleteProps) => {
+    if(props.onlyProfile) return null;
+    return (
+        <Button text='Delete' variant={'red'} filled onClick={props.onDelete} />
+    );
+};
+
 interface Props {
     id: string,
     name: string
@@ -12,6 +25,7 @@ interface Props {
     rounded: boolean
     smallPreviews: boolean
     crop: Crop,
+    onlyProfile: boolean,
     onRename: (e: ChangeEvent<HTMLInputElement>) => void,
     onSelect: () => void,
     onDelete: () => void
@@ -74,7 +88,7 @@ const ProfileListItem = (props: Props) => {
             </div>
             <div className={styles.profileInfo}>
                 <Button text={props.active ? 'Selected' : 'Select'} variant={'blue'} filled onClick={props.onSelect} />
-                <Button text='Delete' variant={'red'} filled onClick={props.onDelete} />
+                <DeleteButton onDelete={props.onDelete} onlyProfile={props.onlyProfile} />
             </div>
         </div>
     );

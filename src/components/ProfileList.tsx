@@ -113,6 +113,7 @@ const ProfileList = () => {
                                 name={p.name}
                                 rounded={rounded}
                                 smallPreviews={smallPreviews}
+                                onlyProfile={profiles.length <= 1}
                                 onRename={(e) => onRename(e, p.id)}
                                 onSelect={() => setActiveProfile(p.id)}
                                 onDelete={() => removeProfile(p.id)} />
