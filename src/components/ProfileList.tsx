@@ -80,12 +80,14 @@ const ProfileList = () => {
         const crops = await generateBlobs(source, profiles);
         const nameMap = new Map<string, number>();
         crops.forEach(c => {
-            let fileName = c.name;
-            const n = nameMap.get(c.name);
-            if (n) fileName += `_${n}`;
-            nameMap.set(c.name, (n || 0) + 1);
-            zip.file(`${fileName}.png`, c.blob);
+          if (c.blob == null) return;
+          let fileName = c.name;
+          const n = nameMap.get(c.name);
+          if (n) fileName += `_${n}`;
+          nameMap.set(c.name, (n || 0) + 1);
+          zip.file(`${fileName}.png`, c.blob);
         });
+    
 
         const content = await zip.generateAsync({ type: 'blob' });
         saveAs(content, 'profiles.zip');
