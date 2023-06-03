@@ -12,7 +12,7 @@ interface DeleteProps {
 }
 
 const DeleteButton = (props: DeleteProps) => {
-    if(props.onlyProfile) return null;
+    if (props.onlyProfile) return null;
     return (
         <Button text='Delete' variant={'red'} filled onClick={props.onDelete} />
     );
@@ -55,12 +55,12 @@ const ProfileListItem = (props: Props) => {
 
         if (!source) return;
         drawCanvas(canvasRef, source);
-        if(props.smallPreviews) {
+        if (props.smallPreviews) {
             [canvasRefSmall, canvasRefSmaller].forEach(c => {
-                if(!canvasRef.current || !c.current) return;
+                if (!canvasRef.current || !c.current) return;
                 const ctx = c.current.getContext('2d');
-                if(!ctx) return;
-                ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height);
+                if (!ctx) return;
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 ctx.drawImage(canvasRef.current, 0, 0, ctx.canvas.width, ctx.canvas.height);
             });
         }
