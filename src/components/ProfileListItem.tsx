@@ -1,7 +1,7 @@
 import { ChangeEvent, RefObject, useEffect, useRef } from 'react';
 import { Crop } from 'react-image-crop';
 import { useAtom } from 'jotai';
-import { sourceAtom } from '../store';
+import { framesAtom, sourceAtom } from '../store';
 import Button from './Button';
 import styles from './styles/ProfileListItem.module.css';
 
@@ -33,12 +33,13 @@ interface Props {
 
 const ProfileListItem = (props: Props) => {
     const [source,] = useAtom(sourceAtom);
+    const [frames,] = useAtom(framesAtom);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const canvasRefSmall = useRef<HTMLCanvasElement>(null);
     const canvasRefSmaller = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
-        const drawCanvas = (canvas: RefObject<HTMLCanvasElement>, src: HTMLImageElement) => {
+        const drawCanvas = (canvas: RefObject<HTMLCanvasElement>, src: HTMLImageElement | HTMLCanvasElement) => {
             if ((source == null) || (canvas.current == null)) return;
             const ctx = canvas.current.getContext('2d');
             if (ctx == null) return;
@@ -53,9 +54,22 @@ const ProfileListItem = (props: Props) => {
                 0, 0, ctx.canvas.width, ctx.canvas.height);
         };
 
-        if (!source) return;
-        drawCanvas(canvasRef, source);
-        if (props.smallPreviews) {
+        let currentFrameIndex = 0;
+        let timeoutId: string | number | NodeJS.Timeout | null | undefined = null;
+        const advanceFrame = () => {
+            if (!frames) return;
+            
+            drawCanvas(canvasRef, frames[currentFrameIndex].canvas);
+            currentFrameIndex = (currentFrameIndex + 1) % frames.length;
+            if (timeoutId) clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                advanceFrame();
+                if(props.smallPreviews)
+                    updateSmallPreviews();
+            }, frames[currentFrameIndex].delay);
+        };
+
+        const updateSmallPreviews = () => {
             [canvasRefSmall, canvasRefSmaller].forEach(c => {
                 if (!canvasRef.current || !c.current) return;
                 const ctx = c.current.getContext('2d');
@@ -63,8 +77,22 @@ const ProfileListItem = (props: Props) => {
                 ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 ctx.drawImage(canvasRef.current, 0, 0, ctx.canvas.width, ctx.canvas.height);
             });
+        };
+
+        if (frames) 
+            advanceFrame();
+        else if(source){
+            drawCanvas(canvasRef, source);
         }
-    }, [props.crop, props.smallPreviews, source]);
+
+        if (props.smallPreviews) {
+            updateSmallPreviews();
+        }
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, [props.crop, props.smallPreviews, source, frames]);
 
     return (
         <div className={`${styles.profile} ${props.active ? styles.active : ''}`}>

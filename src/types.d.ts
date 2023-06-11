@@ -6,3 +6,9 @@ type Profile = {
     active: boolean
     crop: Partial<Omit<Crop>>
 }
+
+type SliceFrame = {
+    canvas: HTMLCanvasElement
+    delay: number
+    dims: { width: number; height: number; top: number; left: number }
+}
