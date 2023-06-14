@@ -1,15 +1,16 @@
 import { useAtom } from "jotai";
 import { useRef, ChangeEvent } from "react";
-import { framesAtom, gifAtom, loadingAtom, profilesAtom, sourceAtom } from "../store";
+import { framesAtom, gifAtom, loadingAtom, mediaTypeAtom, profilesAtom, sourceAtom } from "../store";
 import { v4 } from "uuid";
 
 import Button from "./Button";
-import { ParsedFrame, ParsedGif, decompressFrames, parseGIF } from "gifuct-js";
+import { ParsedFrame, decompressFrames, parseGIF } from "gifuct-js";
 import { SliceFrame } from "../types";
 
 function UploadButton() {
     const [, setSource] = useAtom(sourceAtom);
     const [, setGif] = useAtom(gifAtom);
+    const [, setMediaType] = useAtom(mediaTypeAtom);
     const [, setFrames] = useAtom(framesAtom);
     const [, setProfiles] = useAtom(profilesAtom);
     const [, setLoading] = useAtom(loadingAtom);
@@ -45,9 +46,13 @@ function UploadButton() {
         return fakeCanvas;
     };
 
+    /**
+     * Expands gifs with frames that may only be smaller patches
+     * to full individual frames.
+     * @param frames 
+     * @returns 
+     */
     const expandFrames = (frames: ParsedFrame[]) => {
-        console.log(frames.length);
-        
         const fullFrames: SliceFrame[] = [];
         let currentCanvas: HTMLCanvasElement | null = null;
         frames.forEach(f => {
@@ -93,7 +98,7 @@ function UploadButton() {
             const img = new Image();
             img.src = resDataURL as string;
             setSource(img);
-
+            setMediaType(inp.files[0].type);
             if(inp.files[0].type === 'image/gif'){
                 const resArrayBuffer = await readFile(readerArrayBuffer, inp.files[0], 'ArrayBuffer');
                 const buf = resArrayBuffer as ArrayBuffer;

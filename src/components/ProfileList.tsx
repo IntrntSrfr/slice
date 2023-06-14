@@ -4,15 +4,18 @@ import Checkbox from "./Checkbox";
 import ProfileListItem from "./ProfileListItem";
 import styles from './styles/ProfileList.module.css';
 import { useAtom } from 'jotai';
-import { profilesAtom, sourceAtom } from "../store";
-import { centerCropImage, generateBlobs } from "../utils/utils";
-import JSZip from "jszip";
+import { framesAtom, mediaTypeAtom, profilesAtom, sourceAtom } from "../store";
+import { centerCropImage, generateGif } from "../utils/utils";
 import { v4 } from "uuid";
-import { saveAs } from "file-saver";
+import { Profile, SliceFrame } from "../types";
+import JSZip from "jszip";
+import saveAs from "file-saver";
 
 const ProfileList = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
     const [source,] = useAtom(sourceAtom);
+    const [frames,] = useAtom(framesAtom);
+    const [mediaType,] = useAtom(mediaTypeAtom);
     const [rounded, setRounded] = useState(false);
     const [smallPreviews, setSmallPreviews] = useState(false);
 
@@ -72,12 +75,10 @@ const ProfileList = () => {
         });
         setProfiles(p);
     };
-
-    const exportProfiles = async () => {
+/* 
+    const exportImages = async (src: HTMLImageElement, profiles: Profile[]) => {
         const zip = new JSZip();
-        if (!source) return;
-
-        const crops = await generateBlobs(source, profiles);
+        const crops = await generateBlobs(src, profiles);
         const nameMap = new Map<string, number>();
         crops.forEach(c => {
             if (c.blob == null) return;
@@ -88,10 +89,59 @@ const ProfileList = () => {
             zip.file(`${fileName}.png`, c.blob);
         });
 
+        const content = await zip.generateAsync({ type: 'blob' });
+        saveAs(content, 'profiles.zip');
+    }; */
+
+    const exportImages = async (src: HTMLImageElement, profiles: Profile[]) => {
+        if(!src) return;
+        await 
+    }
+
+    const exportGifs = async (frames: SliceFrame[], profiles: Profile[]) => {
+        if(!frames) return;
+        await generateGif(frames, profiles);
+    };
+
+    const exportProfiles = async () => {
+        if(!source || !profiles.length) return;
+        if(mediaType === 'image/jpeg' || mediaType === 'image/png'){
+            await exportImages(source, profiles);
+        } else if(mediaType === 'image/gif' && frames) {
+            await exportGifs(frames, profiles);
+        } else {
+            console.log("could not export");
+        }
+    };
+
+    const mediaTypeExtension = (mediaType: string) => {
+        switch (mediaType) {
+            case 'image/jpeg':
+                return '.jpg'
+            case 'image/png':
+                return '.png'
+            case 'image/gif':
+                return '.gif'
+            default:
+                return ''
+        }
+    }
+    
+    const exportProfiles = async (blobs: blobPair[], mediaType: string) => {
+        const zip = new JSZip();
+        const nameMap = new Map<string, number>();
+        blobs.forEach(b => {
+            if (b.blob == null) return;
+            let fileName = b.name;
+            const n = nameMap.get(b.name);
+            if (n) fileName += `_${n}`;
+            nameMap.set(b.name, (n || 0) + 1);
+            zip.file(`${fileName}${mediaTypeExtension(mediaType)}`, b.blob);
+        });
 
         const content = await zip.generateAsync({ type: 'blob' });
         saveAs(content, 'profiles.zip');
-    };
+    } 
 
     return (
         <div className={styles.profileList}>
