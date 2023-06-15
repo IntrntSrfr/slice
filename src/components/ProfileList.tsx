@@ -4,8 +4,8 @@ import Checkbox from "./Checkbox";
 import ProfileListItem from "./ProfileListItem";
 import styles from './styles/ProfileList.module.css';
 import { useAtom } from 'jotai';
-import { framesAtom, mediaTypeAtom, profilesAtom, sourceAtom } from "../store";
-import { centerCropImage, generateGifs, generateImages } from "../utils/utils";
+import { framesAtom, loadingAtom, mediaTypeAtom, profilesAtom, sourceAtom } from "../store";
+import { centerCropImage, generateGifs, generateImages, mediaTypeExtension } from "../utils/utils";
 import { v4 } from "uuid";
 import JSZip from "jszip";
 import saveAs from "file-saver";
@@ -14,6 +14,7 @@ const ProfileList = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
     const [source,] = useAtom(sourceAtom);
     const [frames,] = useAtom(framesAtom);
+    const [loading,] = useAtom(loadingAtom);
     const [mediaType,] = useAtom(mediaTypeAtom);
     const [rounded, setRounded] = useState(false);
     const [smallPreviews, setSmallPreviews] = useState(false);
@@ -86,19 +87,6 @@ const ProfileList = () => {
             throw new Error("no compatible filetype found");
         }
     };
-
-    const mediaTypeExtension = (mediaType: string) => {
-        switch (mediaType) {
-            case 'image/jpeg':
-                return '.jpg';
-            case 'image/png':
-                return '.png';
-            case 'image/gif':
-                return '.gif';
-            default:
-                return '';
-        }
-    };
     
     const exportProfiles = async () => {
         try {
@@ -125,7 +113,7 @@ const ProfileList = () => {
 
     return (
         <div className={styles.profileList}>
-            {source &&
+            {source && !loading &&
                 <div className={styles.profileListInner}>
                     <div className={styles.listHeader}>
                         <h2>Profiles</h2>

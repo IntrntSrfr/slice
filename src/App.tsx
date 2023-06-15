@@ -13,6 +13,8 @@ import { centerCropImage } from "./utils/utils";
 
 const App = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
+    const [source,] = useAtom(sourceAtom);
+    const [loading,] = useAtom(loadingAtom);
 
     const activeProfile = () => {
         return profiles.find(p => p.active);
@@ -30,21 +32,18 @@ const App = () => {
     function onImageLoad(e: SyntheticEvent<HTMLImageElement>) {
         const crop = centerCropImage(e.currentTarget);
         updateCrop({}, crop);
-        setLoading(false);
     }
-
-    const [source, ] = useAtom(sourceAtom);
-    const [loading, setLoading] = useAtom(loadingAtom);
 
     return (
         <>
             <Overlay active={loading} />
             <div className="crop-container">
-                {source &&
+                {
+                    source && 
                     <ReactCrop
                         aspect={1}
-                        minHeight={64}
-                        minWidth={64}
+                        minHeight={32}
+                        minWidth={32}
                         crop={activeProfile()?.crop}
                         onChange={updateCrop}
                         ruleOfThirds

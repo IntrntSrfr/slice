@@ -1,3 +1,4 @@
+import AppLoader from './AppLoader';
 import styles from './styles/Overlay.module.css';
 
 interface Props {
@@ -6,7 +7,10 @@ interface Props {
 
 const Overlay = ({ active = false }: Props) => {
     return (
-        <div className={`${styles.overlay} ${active ? styles.active : ''}`}>Loading...</div>
+        <div className={`${styles.overlay} ${active ? styles.active : ''}`}>
+            {/* Loading... */}
+            <AppLoader/>
+        </div>
     );
 };
 

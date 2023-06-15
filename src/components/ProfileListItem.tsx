@@ -1,7 +1,7 @@
 import { ChangeEvent, RefObject, useEffect, useRef } from 'react';
 import { Crop } from 'react-image-crop';
 import { useAtom } from 'jotai';
-import { framesAtom, sourceAtom } from '../store';
+import { framesAtom, mediaTypeAtom, sourceAtom } from '../store';
 import Button from './Button';
 import styles from './styles/ProfileListItem.module.css';
 
@@ -34,11 +34,13 @@ interface Props {
 const ProfileListItem = (props: Props) => {
     const [source,] = useAtom(sourceAtom);
     const [frames,] = useAtom(framesAtom);
+    const [mediaType,] = useAtom(mediaTypeAtom);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const canvasRefSmall = useRef<HTMLCanvasElement>(null);
     const canvasRefSmaller = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
+        if(!props.crop) return;
         const drawCanvas = (canvas: RefObject<HTMLCanvasElement>, src: HTMLImageElement | HTMLCanvasElement) => {
             if ((source == null) || (canvas.current == null)) return;
             const ctx = canvas.current.getContext('2d');
@@ -79,9 +81,9 @@ const ProfileListItem = (props: Props) => {
             });
         };
 
-        if (frames) 
+        if (mediaType === 'image/gif' && frames) 
             advanceFrame();
-        else if(source){
+        else if((mediaType === 'image/jpeg' || mediaType === 'image/png') && source){
             drawCanvas(canvasRef, source);
         }
 
@@ -92,7 +94,7 @@ const ProfileListItem = (props: Props) => {
         return () => {
             if (timeoutId) clearTimeout(timeoutId);
         };
-    }, [props.crop, props.smallPreviews, source, frames]);
+    }, [props.crop, props.smallPreviews, source, frames, mediaType]);
 
     return (
         <div className={`${styles.profile} ${props.active ? styles.active : ''}`}>
@@ -124,7 +126,7 @@ const ProfileListItem = (props: Props) => {
                 </div>
             </div>
             <div className={styles.profileInfo}>
-                <Button text={props.active ? 'Selected' : 'Select'} variant={'blue'} filled onClick={props.onSelect} />
+                <Button text={props.active ? 'Selected' : 'Select'} variant={'blue'} filled={props.active} onClick={props.onSelect} />
                 <DeleteButton onDelete={props.onDelete} onlyProfile={props.onlyProfile} />
             </div>
         </div>

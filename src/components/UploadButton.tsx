@@ -12,7 +12,6 @@ function UploadButton() {
     const [, setGif] = useAtom(gifAtom);
     const [, setMediaType] = useAtom(mediaTypeAtom);
     const [, setFrames] = useAtom(framesAtom);
-    const [, setProfiles] = useAtom(profilesAtom);
     const [, setLoading] = useAtom(loadingAtom);
     const inpRef = useRef<HTMLInputElement>(null);
 
@@ -109,15 +108,9 @@ function UploadButton() {
             }
         } catch (err: unknown) {
             console.log(err);
-            return;
+        } finally {
+            setLoading(false);
         }
-
-        setProfiles([{
-            id: v4(),
-            name: 'New profile',
-            crop: { unit: '%', width: 50 },
-            active: true
-        }]);
     };
 
     return (

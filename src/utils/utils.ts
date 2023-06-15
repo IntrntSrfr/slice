@@ -19,6 +19,19 @@ export const centerCropImage = (img: HTMLImageElement): PercentCrop => {
     return crop;
 };
 
+export const mediaTypeExtension = (mediaType: string) => {
+    switch (mediaType) {
+        case 'image/jpeg':
+            return '.jpg';
+        case 'image/png':
+            return '.png';
+        case 'image/gif':
+            return '.gif';
+        default:
+            return '';
+    }
+};
+
 const cropCanvas = (src: HTMLImageElement | HTMLCanvasElement, crop: PercentCrop) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
