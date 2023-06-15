@@ -1,8 +1,6 @@
 import { centerCrop, makeAspectCrop, PercentCrop } from "react-image-crop";
-import { Profile, SliceFrame } from "../types";
+import { BlobPair, Profile, SliceFrame } from "../types";
 import { applyPalette, GIFEncoder, quantize } from 'gifenc';
-import JSZip from "jszip";
-import saveAs from "file-saver";
 
 export const centerCropImage = (img: HTMLImageElement): PercentCrop => {
     const { naturalWidth: width, naturalHeight: height } = img;
@@ -24,7 +22,7 @@ export const centerCropImage = (img: HTMLImageElement): PercentCrop => {
 const cropCanvas = (src: HTMLImageElement | HTMLCanvasElement, crop: PercentCrop) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    if (ctx == null) throw new Error('Canvas 2D context is not available.');
+    if (!ctx) throw new Error('canvas 2D context is not available');
 
     ctx.canvas.width = src.width * crop.width / 100;
     ctx.canvas.height = src.height * crop.height / 100;
@@ -38,7 +36,7 @@ const cropCanvas = (src: HTMLImageElement | HTMLCanvasElement, crop: PercentCrop
     return canvas;
 };
 
-export const generateBlob = async (img: HTMLImageElement, crop: PercentCrop): Promise<Blob | null> => {
+const generateImage = async (img: HTMLImageElement, crop: PercentCrop): Promise<Blob | null> => {
     try {
         const canvas = cropCanvas(img, crop);
         return await new Promise(res => canvas.toBlob(res));
@@ -47,152 +45,66 @@ export const generateBlob = async (img: HTMLImageElement, crop: PercentCrop): Pr
     }
 };
 
-interface blobPair {
-    blob: Blob | null
-    name: string
-}
-
-export const generateBlobs = async (img: HTMLImageElement, profiles: Profile[]): Promise<blobPair[]> => {
+export const generateImages = async (img: HTMLImageElement, profiles: Profile[]): Promise<BlobPair[]> => {
     return await Promise.all(
         profiles.map(async (p) => {
-            //let blob: Blob;
-            //i
-            const blob = await generateBlob(img, p.crop);
+            const blob = await generateImage(img, p.crop);
             const name = (p.name || p.id).trim();
             return { blob, name };
         })
     );
 };
 
-const combineArrays = (arrays: ImageData[]) => {
-    const combined = new Uint8ClampedArray(arrays.reduce((a, b) => a+b.data.length, 0));
+const combineArrays = (arrays: {data: ImageData, delay: number}[]) => {
+    const combined = new Uint8ClampedArray(arrays.reduce((a, b) => a+b.data.data.length, 0));
     let offset = 0;
     arrays.forEach(a => {
-        combined.set(a.data, offset);
-        offset += a.data.length;
+        combined.set(a.data.data, offset);
+        offset += a.data.data.length;
     });
     return combined;
 };
 
-const saveData = (blob: Blob, fileName: string) => {
-    const a = document.createElement("a");
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    const url = window.URL.createObjectURL(blob);
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    window.URL.revokeObjectURL(url);
+export const generateGifs = async (frames: SliceFrame[], profiles: Profile[]) => {
+    return await Promise.all(
+        profiles.map(async(p) => {
+            const blob = await generateGif(frames, p);
+            const name = (p.name || p.id).trim();
+            return {blob, name};
+        })
+    );
 };
 
-/* 
-const generateGifPalette = (frames: SliceFrame[]) => {
-
-    frames.forEach(f => {
-        const ctx = f.canvas.getContext('2d');
-        if(!ctx) return;
-        const pc = (p.crop as PercentCrop);
+const generateGif = async (frames: SliceFrame[], profile: Profile) => {
+    // preprocess palette and crop frames to fit profile
+    const croppedFrames: {data: ImageData, delay: number}[] = [];
+    const dims = [0, 0];
+    for(const f of frames){
+        const ctx = f.canvas.getContext('2d', {willReadFrequently: true});
+        if (!ctx) throw new Error('canvas 2D context is not available');
+        
+        const pc = (profile.crop as PercentCrop);
         const imageData = ctx.getImageData(
             ctx.canvas.width * pc.x / 100,
             ctx.canvas.height * pc.y / 100,
             ctx.canvas.width * pc.width / 100,
             ctx.canvas.height * pc.height / 100,
         );
+        croppedFrames.push({data: imageData, delay: f.delay});
         dims[0] = ctx.canvas.width * pc.width / 100;
         dims[1] = ctx.canvas.height * pc.height / 100;
-        croppedFrames.push(imageData);
-    });
-    //console.log(croppedFrames);
+    }
+
     const combined = combineArrays(croppedFrames);
-    //console.log(combined);
     const palette = quantize(combined, 256, {format: 'rgba4444'});
-}
-*/
 
-export const generateGif = async (frames: SliceFrame[], profiles: Profile[]) => {
-    profiles.forEach(p => {
-        const gif = GIFEncoder();
-        const croppedFrames: ImageData[] = [];
-        const dims = [0, 0];
-        
-        frames.forEach(f => {
-            const ctx = f.canvas.getContext('2d');
-            if(!ctx) return;
-            const pc = (p.crop as PercentCrop);
-            const imageData = ctx.getImageData(
-                ctx.canvas.width * pc.x / 100,
-                ctx.canvas.height * pc.y / 100,
-                ctx.canvas.width * pc.width / 100,
-                ctx.canvas.height * pc.height / 100,
-            );
-            croppedFrames.push(imageData);
-            dims[0] = ctx.canvas.width * pc.width / 100;
-            dims[1] = ctx.canvas.height * pc.height / 100;
-        });
-        //console.log(croppedFrames);
-        const combined = combineArrays(croppedFrames);
-        //console.log(combined);
-        const palette = quantize(combined, 256, {format: 'rgba4444'});
-        //console.log(palette);
-
-        croppedFrames.forEach(f => {
-            const index = applyPalette(f.data, palette, 'rgba4444');
-            gif.writeFrame(index, dims[0], dims[1], {palette: palette, delay: });
-        });
-
-        gif.finish();
-        console.log(gif);
-
-        const blob = new Blob([gif.bytesView()], {type: 'image/gif'});
-        console.log(blob);
-
-        saveData(blob, "lol.gif");
-        
-        console.log(URL.createObjectURL(blob));
-        console.log('completed profile');
+    // write gif frames
+    const gif = GIFEncoder();
+    croppedFrames.forEach(f => {
+        const index = applyPalette(f.data.data, palette, 'rgba4444');
+        gif.writeFrame(index, dims[0], dims[1], {palette: palette, delay: f.delay});
     });
-    console.log('complete');
 
-    /* 
-    return new Promise<string>((res, rej) => {
-        res("i am generated gif :)");
-    });
-     */
+    gif.finish();
+    return new Blob([gif.bytesView()], {type: 'image/gif'});
 };
-
-
-/* 
-export const exportProfiles = async (blobs: blobPair[], mediaType: string) => {
-    const zip = new JSZip();
-    const nameMap = new Map<string, number>();
-    blobs.forEach(b => {
-        if (b.blob == null) return;
-        let fileName = b.name;
-        const n = nameMap.get(b.name);
-        if (n) fileName += `_${n}`;
-        nameMap.set(b.name, (n || 0) + 1);
-        zip.file(`${fileName}${mediaTypeExtension(mediaType)}`, b.blob);
-    });
-
-    const content = await zip.generateAsync({ type: 'blob' });
-    saveAs(content, 'profiles.zip');
-} 
- */
-/* 
-export const exportProfiles = async (src: HTMLImageElement, profiles: Profile[]) => {
-    const zip = new JSZip();
-    const crops = await generateBlobs(src, profiles);
-    const nameMap = new Map<string, number>();
-    crops.forEach(c => {
-        if (c.blob == null) return;
-        let fileName = c.name;
-        const n = nameMap.get(c.name);
-        if (n) fileName += `_${n}`;
-        nameMap.set(c.name, (n || 0) + 1);
-        zip.file(`${fileName}.png`, c.blob);
-    });
-
-    const content = await zip.generateAsync({ type: 'blob' });
-    saveAs(content, 'profiles.zip');
-}
- */

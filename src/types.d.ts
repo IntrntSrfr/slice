@@ -12,3 +12,8 @@ type SliceFrame = {
     delay: number
     dims: { width: number; height: number; top: number; left: number }
 }
+
+type BlobPair = {
+    blob: Blob | null
+    name: string
+}

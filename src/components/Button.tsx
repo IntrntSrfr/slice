@@ -7,12 +7,13 @@ interface Props {
     style?: CSSProperties,
     variant: ButtonType,
     filled?: boolean,
-    text: string
+    text: string,
+    disabled?: boolean
 }
 
 const Button = (props: Props) => {
     return (
-        <button className={`btn ${props.variant} ${props.filled ? 'btn-filled' : ''}`} style={props.style} onClick={props.onClick}>
+        <button className={`btn ${props.variant} ${props.filled ? 'btn-filled' : ''}`} style={props.style} onClick={props.onClick} disabled={props.disabled}>
             {props.text}
         </button>
     );
