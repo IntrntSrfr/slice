@@ -1,7 +1,6 @@
 import { useAtom } from "jotai";
 import { useRef, ChangeEvent } from "react";
-import { framesAtom, gifAtom, loadingAtom, mediaTypeAtom, profilesAtom, sourceAtom } from "../store";
-import { v4 } from "uuid";
+import { defaultProfile, framesAtom, gifAtom, loadingAtom, mediaTypeAtom, profilesAtom, sourceAtom } from "../store";
 
 import Button from "./Button";
 import { ParsedFrame, decompressFrames, parseGIF } from "gifuct-js";
@@ -13,6 +12,7 @@ function UploadButton() {
     const [, setMediaType] = useAtom(mediaTypeAtom);
     const [, setFrames] = useAtom(framesAtom);
     const [, setLoading] = useAtom(loadingAtom);
+    const [,setProfiles]=useAtom(profilesAtom);
     const inpRef = useRef<HTMLInputElement>(null);
 
     const clickUpload = () => {
@@ -89,6 +89,7 @@ function UploadButton() {
         if (!inp.files?.length) return;
         setLoading(true);
         resetSources();
+        setProfiles([defaultProfile()]);
 
         const readerDataURL = new FileReader();
         const readerArrayBuffer = new FileReader();
