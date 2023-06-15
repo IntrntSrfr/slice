@@ -12,7 +12,7 @@ function UploadButton() {
     const [, setMediaType] = useAtom(mediaTypeAtom);
     const [, setFrames] = useAtom(framesAtom);
     const [, setLoading] = useAtom(loadingAtom);
-    const [,setProfiles]=useAtom(profilesAtom);
+    const [, setProfiles] = useAtom(profilesAtom);
     const inpRef = useRef<HTMLInputElement>(null);
 
     const clickUpload = () => {
@@ -34,7 +34,7 @@ function UploadButton() {
         setFrames(null);
     };
 
-    const arrToCanvas = (arr: Uint8ClampedArray, h: number, w:number ) => {
+    const arrToCanvas = (arr: Uint8ClampedArray, h: number, w: number) => {
         const fakeCanvas = document.createElement('canvas');
         fakeCanvas.height = h;
         fakeCanvas.width = w;
@@ -55,14 +55,14 @@ function UploadButton() {
         const fullFrames: SliceFrame[] = [];
         let currentCanvas: HTMLCanvasElement | null = null;
         frames.forEach(f => {
-            if(!currentCanvas) {
+            if (!currentCanvas) {
                 currentCanvas = arrToCanvas(f.patch, f.dims.height, f.dims.width);
-                if(!currentCanvas) return;
-                fullFrames.push({canvas: currentCanvas, delay: f.delay, dims: f.dims});
+                if (!currentCanvas) return;
+                fullFrames.push({ canvas: currentCanvas, delay: f.delay, dims: f.dims });
                 return;
             }
 
-            if(f.disposalType === 1) {
+            if (f.disposalType === 1) {
                 // create brand new canvas, draw the previous
                 // canvas over it, then draw the new patch.
                 // there's probably a better way to do this tbh :)
@@ -71,12 +71,12 @@ function UploadButton() {
                 newCanvas.width = currentCanvas.width;
                 const newCtx = newCanvas.getContext('2d');
                 if (!newCtx) return null;
-                newCtx.drawImage(currentCanvas, 0,0);
+                newCtx.drawImage(currentCanvas, 0, 0);
 
                 const nc = arrToCanvas(f.patch, f.dims.height, f.dims.width);
-                if(!nc) return;
+                if (!nc) return;
                 newCtx.drawImage(nc, f.dims.left, f.dims.top);
-                fullFrames.push({canvas: newCanvas, delay: f.delay, dims: f.dims});
+                fullFrames.push({ canvas: newCanvas, delay: f.delay, dims: f.dims });
                 currentCanvas = newCanvas;
             }
         });
@@ -99,7 +99,7 @@ function UploadButton() {
             img.src = resDataURL as string;
             setSource(img);
             setMediaType(inp.files[0].type);
-            if(inp.files[0].type === 'image/gif'){
+            if (inp.files[0].type === 'image/gif') {
                 const resArrayBuffer = await readFile(readerArrayBuffer, inp.files[0], 'ArrayBuffer');
                 const buf = resArrayBuffer as ArrayBuffer;
                 const gif = parseGIF(buf);

@@ -68,8 +68,8 @@ export const generateImages = async (img: HTMLImageElement, profiles: Profile[])
     );
 };
 
-const combineArrays = (arrays: {data: ImageData, delay: number}[]) => {
-    const combined = new Uint8ClampedArray(arrays.reduce((a, b) => a+b.data.data.length, 0));
+const combineArrays = (arrays: { data: ImageData, delay: number }[]) => {
+    const combined = new Uint8ClampedArray(arrays.reduce((a, b) => a + b.data.data.length, 0));
     let offset = 0;
     arrays.forEach(a => {
         combined.set(a.data.data, offset);
@@ -80,22 +80,22 @@ const combineArrays = (arrays: {data: ImageData, delay: number}[]) => {
 
 export const generateGifs = async (frames: SliceFrame[], profiles: Profile[]) => {
     return await Promise.all(
-        profiles.map(async(p) => {
+        profiles.map(async (p) => {
             const blob = await generateGif(frames, p);
             const name = (p.name || p.id).trim();
-            return {blob, name};
+            return { blob, name };
         })
     );
 };
 
 const generateGif = async (frames: SliceFrame[], profile: Profile) => {
     // preprocess palette and crop frames to fit profile
-    const croppedFrames: {data: ImageData, delay: number}[] = [];
+    const croppedFrames: { data: ImageData, delay: number }[] = [];
     const dims = [0, 0];
-    for(const f of frames){
-        const ctx = f.canvas.getContext('2d', {willReadFrequently: true});
+    for (const f of frames) {
+        const ctx = f.canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) throw new Error('canvas 2D context is not available');
-        
+
         const pc = (profile.crop as PercentCrop);
         const imageData = ctx.getImageData(
             ctx.canvas.width * pc.x / 100,
@@ -103,21 +103,21 @@ const generateGif = async (frames: SliceFrame[], profile: Profile) => {
             ctx.canvas.width * pc.width / 100,
             ctx.canvas.height * pc.height / 100,
         );
-        croppedFrames.push({data: imageData, delay: f.delay});
+        croppedFrames.push({ data: imageData, delay: f.delay });
         dims[0] = ctx.canvas.width * pc.width / 100;
         dims[1] = ctx.canvas.height * pc.height / 100;
     }
 
     const combined = combineArrays(croppedFrames);
-    const palette = quantize(combined, 256, {format: 'rgba4444'});
+    const palette = quantize(combined, 256, { format: 'rgba4444' });
 
     // write gif frames
     const gif = GIFEncoder();
     croppedFrames.forEach(f => {
         const index = applyPalette(f.data.data, palette, 'rgba4444');
-        gif.writeFrame(index, dims[0], dims[1], {palette: palette, delay: f.delay});
+        gif.writeFrame(index, dims[0], dims[1], { palette: palette, delay: f.delay });
     });
 
     gif.finish();
-    return new Blob([gif.bytesView()], {type: 'image/gif'});
+    return new Blob([gif.bytesView()], { type: 'image/gif' });
 };

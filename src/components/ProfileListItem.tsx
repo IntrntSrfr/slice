@@ -40,7 +40,7 @@ const ProfileListItem = (props: Props) => {
     const canvasRefSmaller = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
-        if(!props.crop) return;
+        if (!props.crop) return;
         const drawCanvas = (canvas: RefObject<HTMLCanvasElement>, src: HTMLImageElement | HTMLCanvasElement) => {
             if ((source == null) || (canvas.current == null)) return;
             const ctx = canvas.current.getContext('2d');
@@ -60,13 +60,13 @@ const ProfileListItem = (props: Props) => {
         let timeoutId: string | number | NodeJS.Timeout | null | undefined = null;
         const advanceFrame = () => {
             if (!frames) return;
-            
+
             drawCanvas(canvasRef, frames[currentFrameIndex].canvas);
             currentFrameIndex = (currentFrameIndex + 1) % frames.length;
             if (timeoutId) clearTimeout(timeoutId);
             timeoutId = setTimeout(() => {
                 advanceFrame();
-                if(props.smallPreviews)
+                if (props.smallPreviews)
                     updateSmallPreviews();
             }, frames[currentFrameIndex].delay);
         };
@@ -81,9 +81,9 @@ const ProfileListItem = (props: Props) => {
             });
         };
 
-        if (mediaType === 'image/gif' && frames) 
+        if (mediaType === 'image/gif' && frames)
             advanceFrame();
-        else if((mediaType === 'image/jpeg' || mediaType === 'image/png') && source){
+        else if ((mediaType === 'image/jpeg' || mediaType === 'image/png') && source) {
             drawCanvas(canvasRef, source);
         }
 

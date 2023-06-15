@@ -9,7 +9,7 @@ const Overlay = ({ active = false }: Props) => {
     return (
         <div className={`${styles.overlay} ${active ? styles.active : ''}`}>
             {/* Loading... */}
-            <AppLoader/>
+            <AppLoader />
         </div>
     );
 };

@@ -78,16 +78,16 @@ const ProfileList = () => {
     };
 
     const generateFiles = async () => {
-        if(!source || !profiles.length) throw new Error("no source or profiles");
-        if(mediaType === 'image/jpeg' || mediaType === 'image/png'){
+        if (!source || !profiles.length) throw new Error("no source or profiles");
+        if (mediaType === 'image/jpeg' || mediaType === 'image/png') {
             return await generateImages(source, profiles);
-        } else if(mediaType === 'image/gif' && frames) {
+        } else if (mediaType === 'image/gif' && frames) {
             return await generateGifs(frames, profiles);
         } else {
             throw new Error("no compatible filetype found");
         }
     };
-    
+
     const exportProfiles = async () => {
         try {
             setIsExporting(true);
@@ -106,7 +106,7 @@ const ProfileList = () => {
             saveAs(content, 'profiles.zip');
         } catch (error) {
             console.log('could not generate files!');
-        } finally{
+        } finally {
             setIsExporting(false);
         }
     };
@@ -140,7 +140,7 @@ const ProfileList = () => {
                     <div className="btn-grp fill-last">
                         <Checkbox checked={rounded} label={"Round preview"} onChange={toggleRound} />
                         <Checkbox checked={smallPreviews} label={"Small previews"} onChange={toggleSmallPreviews} />
-                        <Button text={ isExporting ? "Exporting..." : "Export profiles" } variant="green" onClick={exportProfiles} disabled={isExporting} />
+                        <Button text={isExporting ? "Exporting..." : "Export profiles"} variant="green" onClick={exportProfiles} disabled={isExporting} />
                     </div>
                 </div>
             }

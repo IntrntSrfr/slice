@@ -39,7 +39,7 @@ const App = () => {
             <Overlay active={loading} />
             <div className="crop-container">
                 {
-                    source && 
+                    source &&
                     <ReactCrop
                         aspect={1}
                         minHeight={32}
