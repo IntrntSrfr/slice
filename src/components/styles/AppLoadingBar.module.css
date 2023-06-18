@@ -1,0 +1,21 @@
+.loadingBar {
+    height: 3em;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 5px;
+    border: 1px solid rgb(0, 148, 74);
+    padding: 0.25em;
+    box-sizing: border-box;
+}
+
+.loadingBarProgress {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: rgb(0, 148, 74);
+    width: 0;
+    border-radius: 2px;
+
+    transition: width 0.2s ease-in-out;
+}

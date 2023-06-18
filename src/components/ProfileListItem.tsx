@@ -2,7 +2,7 @@ import { ChangeEvent, RefObject, useEffect, useRef } from 'react';
 import { Crop } from 'react-image-crop';
 import { useAtom } from 'jotai';
 import { framesAtom, mediaTypeAtom, sourceAtom } from '../store';
-import Button from './Button';
+import AppButton from './AppButton';
 import styles from './styles/ProfileListItem.module.css';
 
 
@@ -14,7 +14,7 @@ interface DeleteProps {
 const DeleteButton = (props: DeleteProps) => {
     if (props.onlyProfile) return null;
     return (
-        <Button text='Delete' variant={'red'} filled onClick={props.onDelete} />
+        <AppButton text='Delete' variant={'red'} filled onClick={props.onDelete} />
     );
 };
 
@@ -126,7 +126,7 @@ const ProfileListItem = (props: Props) => {
                 </div>
             </div>
             <div className={styles.profileInfo}>
-                <Button text={props.active ? 'Selected' : 'Select'} variant={'blue'} filled={props.active} onClick={props.onSelect} />
+                <AppButton text={props.active ? 'Selected' : 'Select'} variant={'blue'} filled={props.active} onClick={props.onSelect} />
                 <DeleteButton onDelete={props.onDelete} onlyProfile={props.onlyProfile} />
             </div>
         </div>

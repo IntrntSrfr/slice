@@ -1,18 +1,19 @@
 import { useAtom } from "jotai";
 import { useRef, ChangeEvent } from "react";
-import { defaultProfile, framesAtom, gifAtom, loadingAtom, mediaTypeAtom, profilesAtom, sourceAtom } from "../store";
+import { defaultProfile, framesAtom, gifAtom, mediaTypeAtom, overlayAtom, profilesAtom, sourceAtom } from "../store";
 
-import Button from "./Button";
+import AppButton from "./AppButton";
 import { ParsedFrame, decompressFrames, parseGIF } from "gifuct-js";
 import { SliceFrame } from "../types";
+import AppLoader from "./AppLoader";
 
 function UploadButton() {
     const [, setSource] = useAtom(sourceAtom);
     const [, setGif] = useAtom(gifAtom);
     const [, setMediaType] = useAtom(mediaTypeAtom);
     const [, setFrames] = useAtom(framesAtom);
-    const [, setLoading] = useAtom(loadingAtom);
     const [, setProfiles] = useAtom(profilesAtom);
+    const [, setOverlay] = useAtom(overlayAtom);
     const inpRef = useRef<HTMLInputElement>(null);
 
     const clickUpload = () => {
@@ -87,7 +88,7 @@ function UploadButton() {
     const uploadImage = async (e: ChangeEvent<HTMLInputElement>) => {
         const inp = e.target as HTMLInputElement;
         if (!inp.files?.length) return;
-        setLoading(true);
+        setOverlay({isVisible: true, content: <AppLoader/>});
         resetSources();
         setProfiles([defaultProfile()]);
 
@@ -110,13 +111,13 @@ function UploadButton() {
         } catch (err: unknown) {
             console.log(err);
         } finally {
-            setLoading(false);
+            setOverlay({isVisible: false, content: null});
         }
     };
 
     return (
         <div>
-            <Button text="Upload image" variant="green" style={{ width: '100%' }} onClick={clickUpload} />
+            <AppButton text="Upload image" variant="green" style={{ width: '100%' }} onClick={clickUpload} />
             <input
                 ref={inpRef}
                 type={'file'}

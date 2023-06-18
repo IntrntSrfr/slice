@@ -1,15 +1,14 @@
-import AppLoader from './AppLoader';
 import styles from './styles/Overlay.module.css';
 
 interface Props {
     active?: boolean
+    children?: React.ReactNode
 }
 
-const Overlay = ({ active = false }: Props) => {
+const Overlay = ({ active = false, children}: Props) => {
     return (
         <div className={`${styles.overlay} ${active ? styles.active : ''}`}>
-            {/* Loading... */}
-            <AppLoader />
+            {children}
         </div>
     );
 };

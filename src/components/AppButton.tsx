@@ -11,7 +11,7 @@ interface Props {
     disabled?: boolean
 }
 
-const Button = (props: Props) => {
+const AppButton = (props: Props) => {
     return (
         <button className={`btn ${props.variant} ${props.filled ? 'btn-filled' : ''}`} style={props.style} onClick={props.onClick} disabled={props.disabled}>
             {props.text}
@@ -19,4 +19,4 @@ const Button = (props: Props) => {
     );
 };
 
-export default Button;
+export default AppButton;

@@ -1,24 +1,35 @@
 import { ChangeEvent, useState } from "react";
-import Button from "./Button";
+import AppButton from "./AppButton";
 import Checkbox from "./Checkbox";
 import ProfileListItem from "./ProfileListItem";
 import styles from './styles/ProfileList.module.css';
 import { useAtom } from 'jotai';
-import { framesAtom, loadingAtom, mediaTypeAtom, profilesAtom, sourceAtom } from "../store";
+import { framesAtom, mediaTypeAtom, overlayAtom, profilesAtom, sourceAtom } from "../store";
 import { centerCropImage, generateGifs, generateImages, mediaTypeExtension } from "../utils/utils";
 import { v4 } from "uuid";
 import JSZip from "jszip";
 import saveAs from "file-saver";
+import AppLoader from "./AppLoader";
+import AppProgressBar from "./AppProgressBar";
+
+const ExportOverlay = () => {
+    return (
+        <>
+            <AppLoader/>
+            <AppProgressBar text="Exporting..." variant="green" current={0} max={10}/>
+        </>
+    );
+};
 
 const ProfileList = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
     const [source,] = useAtom(sourceAtom);
     const [frames,] = useAtom(framesAtom);
-    const [loading,] = useAtom(loadingAtom);
+    //const [loading,] = useAtom(loadingAtom);
     const [mediaType,] = useAtom(mediaTypeAtom);
     const [rounded, setRounded] = useState(false);
     const [smallPreviews, setSmallPreviews] = useState(false);
-    const [isExporting, setIsExporting] = useState(false);
+    const [overlay, setOverlay] = useAtom(overlayAtom);
 
     const toggleRound = () => {
         setRounded(!rounded);
@@ -89,8 +100,9 @@ const ProfileList = () => {
     };
 
     const exportProfiles = async () => {
+        // overlay does not get set? async issue?
+        setOverlay({isVisible: true, content: <ExportOverlay/>});
         try {
-            setIsExporting(true);
             const blobs = await generateFiles();
             const zip = new JSZip();
             const nameMap = new Map<string, number>();
@@ -105,21 +117,21 @@ const ProfileList = () => {
             const content = await zip.generateAsync({ type: 'blob' });
             saveAs(content, 'profiles.zip');
         } catch (error) {
-            console.log('could not generate files!');
+            console.error(error, 'could not generate files');
         } finally {
-            setIsExporting(false);
+            setOverlay({isVisible: false, content: null});
         }
     };
 
     return (
         <div className={styles.profileList}>
-            {source && !loading &&
+            {source && !overlay.isVisible &&
                 <div className={styles.profileListInner}>
                     <div className={styles.listHeader}>
                         <h2>Profiles</h2>
                         <div className="flex rows">
-                            <Button text="Add" variant="blue" onClick={addProfile} />
-                            <Button text="Reset" variant="red" onClick={resetProfiles} />
+                            <AppButton text="Add" variant="blue" onClick={addProfile} />
+                            <AppButton text="Reset" variant="red" onClick={resetProfiles} />
                         </div>
                     </div>
                     <div className={styles.profiles}>
@@ -140,7 +152,7 @@ const ProfileList = () => {
                     <div className="btn-grp fill-last">
                         <Checkbox checked={rounded} label={"Round preview"} onChange={toggleRound} />
                         <Checkbox checked={smallPreviews} label={"Small previews"} onChange={toggleSmallPreviews} />
-                        <Button text={isExporting ? "Exporting..." : "Export profiles"} variant="green" onClick={exportProfiles} disabled={isExporting} />
+                        <AppButton text="Export profiles" variant="green" onClick={exportProfiles} />
                     </div>
                 </div>
             }

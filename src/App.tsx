@@ -7,14 +7,15 @@ import Overlay from "./components/Overlay";
 import Sidebar from "./components/Sidebar";
 
 import './App.css';
-import { loadingAtom, profilesAtom, sourceAtom } from "./store";
+import { overlayAtom, profilesAtom, sourceAtom } from "./store";
 import { useAtom } from "jotai";
 import { centerCropImage } from "./utils/utils";
 
 const App = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
     const [source,] = useAtom(sourceAtom);
-    const [loading,] = useAtom(loadingAtom);
+    //const [loading,] = useAtom(loadingAtom);
+    const [overlay,] = useAtom(overlayAtom);
 
     const activeProfile = () => {
         return profiles.find(p => p.active);
@@ -36,7 +37,9 @@ const App = () => {
 
     return (
         <>
-            <Overlay active={loading} />
+            <Overlay active={overlay.isVisible}>
+                {overlay.content}
+            </Overlay>
             <div className="crop-container">
                 {
                     source &&
