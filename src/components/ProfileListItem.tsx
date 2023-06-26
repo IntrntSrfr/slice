@@ -41,7 +41,7 @@ const ProfileListItem = (props: Props) => {
 
     useEffect(() => {
         if (!props.crop) return;
-        const drawCanvas = (canvas: RefObject<HTMLCanvasElement>, src: HTMLImageElement | HTMLCanvasElement) => {
+        const drawCanvas = (canvas: RefObject<HTMLCanvasElement>, src: HTMLImageElement | OffscreenCanvas) => {
             if ((source == null) || (canvas.current == null)) return;
             const ctx = canvas.current.getContext('2d');
             if (ctx == null) return;
@@ -60,8 +60,7 @@ const ProfileListItem = (props: Props) => {
         let timeoutId: string | number | NodeJS.Timeout | null | undefined = null;
         const advanceFrame = () => {
             if (!frames) return;
-
-            drawCanvas(canvasRef, frames[currentFrameIndex].canvas);
+            drawCanvas(canvasRef, frames[currentFrameIndex].canvas as OffscreenCanvas);
             currentFrameIndex = (currentFrameIndex + 1) % frames.length;
             if (timeoutId) clearTimeout(timeoutId);
             timeoutId = setTimeout(() => {

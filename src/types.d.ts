@@ -8,7 +8,8 @@ type Profile = {
 }
 
 type SliceFrame = {
-    canvas: HTMLCanvasElement
+    canvas?: OffscreenCanvas
+    imageData: ImageData
     delay: number
     dims: { width: number; height: number; top: number; left: number }
 }
@@ -16,4 +17,15 @@ type SliceFrame = {
 type BlobPair = {
     blob: Blob | null
     name: string
+}
+
+type GifExportInit = {
+    frames: SliceFrame[], 
+    profiles: Profile[],
+}
+
+type GifExportProgress = {
+    evt: 'progress' | 'finished',
+    progress:number,
+    blobs?: BlobPair[]
 }

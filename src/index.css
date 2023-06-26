@@ -96,7 +96,7 @@ button{
     --btn-border-color: rgb(179, 44, 44);
     --btn-fill-color: rgb(179, 44, 44);
     --btn-fill-color-hover: rgb(201, 39, 39);
-    border-color: var(--btn-border-color) !important;
+    border-color: var(--btn-border-color);
 }
 
 .red:hover {

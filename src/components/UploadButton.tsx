@@ -36,9 +36,7 @@ function UploadButton() {
     };
 
     const arrToCanvas = (arr: Uint8ClampedArray, h: number, w: number) => {
-        const fakeCanvas = document.createElement('canvas');
-        fakeCanvas.height = h;
-        fakeCanvas.width = w;
+        const fakeCanvas = new OffscreenCanvas(w, h);
         const fakeCtx = fakeCanvas.getContext('2d');
         if (!fakeCtx) return null;
         const imageData = new ImageData(arr, w, h);
@@ -54,12 +52,13 @@ function UploadButton() {
      */
     const expandFrames = (frames: ParsedFrame[]) => {
         const fullFrames: SliceFrame[] = [];
-        let currentCanvas: HTMLCanvasElement | null = null;
+        let currentCanvas: OffscreenCanvas | null = null;
         frames.forEach(f => {
             if (!currentCanvas) {
                 currentCanvas = arrToCanvas(f.patch, f.dims.height, f.dims.width);
                 if (!currentCanvas) return;
-                fullFrames.push({ canvas: currentCanvas, delay: f.delay, dims: f.dims });
+                const imageData = new ImageData(f.patch, f.dims.height, f.dims.width);
+                fullFrames.push({ canvas: currentCanvas, imageData: imageData,  delay: f.delay, dims: f.dims });
                 return;
             }
 
@@ -67,9 +66,7 @@ function UploadButton() {
                 // create brand new canvas, draw the previous
                 // canvas over it, then draw the new patch.
                 // there's probably a better way to do this tbh :)
-                const newCanvas = document.createElement('canvas');
-                newCanvas.height = currentCanvas.height;
-                newCanvas.width = currentCanvas.width;
+                const newCanvas = new OffscreenCanvas(currentCanvas.width, currentCanvas.height);
                 const newCtx = newCanvas.getContext('2d');
                 if (!newCtx) return null;
                 newCtx.drawImage(currentCanvas, 0, 0);
@@ -77,7 +74,8 @@ function UploadButton() {
                 const nc = arrToCanvas(f.patch, f.dims.height, f.dims.width);
                 if (!nc) return;
                 newCtx.drawImage(nc, f.dims.left, f.dims.top);
-                fullFrames.push({ canvas: newCanvas, delay: f.delay, dims: f.dims });
+                const imageData = newCtx.getImageData(0, 0, newCtx.canvas.width, newCtx.canvas.height);
+                fullFrames.push({ canvas: newCanvas, imageData: imageData, delay: f.delay, dims: f.dims });
                 currentCanvas = newCanvas;
             }
         });

@@ -78,23 +78,24 @@ const combineArrays = (arrays: { data: ImageData, delay: number }[]) => {
     return combined;
 };
 
-export const generateGifs = async (frames: SliceFrame[], profiles: Profile[]) => {
-    return await Promise.all(
-        profiles.map(async (p) => {
-            const blob = await generateGif(frames, p);
+export const generateGifs = async (frames: SliceFrame[], profiles: Profile[], cb?: (cur: number) => void) => {
+    return profiles.map((p) => {
+            const blob = generateGif(frames, p, cb);
             const name = (p.name || p.id).trim();
             return { blob, name };
-        })
-    );
+        });
 };
 
-const generateGif = async (frames: SliceFrame[], profile: Profile) => {
+const generateGif = (frames: SliceFrame[], profile: Profile, cb?: (cur:number)=>void) => {
     // preprocess palette and crop frames to fit profile
     const croppedFrames: { data: ImageData, delay: number }[] = [];
+    
     const dims = [0, 0];
-    for (const f of frames) {
-        const ctx = f.canvas.getContext('2d', { willReadFrequently: true });
-        if (!ctx) throw new Error('canvas 2D context is not available');
+    for(let i = 0; i < frames.length; i++){
+        const f = frames[i];
+        const ctx = new OffscreenCanvas(f.imageData.width, f.imageData.height).getContext('2d');
+        if(!ctx) throw new Error('canvas 2D context is not available');
+        ctx.putImageData(f.imageData, 0, 0);
 
         const pc = (profile.crop as PercentCrop);
         const imageData = ctx.getImageData(
@@ -106,8 +107,14 @@ const generateGif = async (frames: SliceFrame[], profile: Profile) => {
         croppedFrames.push({ data: imageData, delay: f.delay });
         dims[0] = ctx.canvas.width * pc.width / 100;
         dims[1] = ctx.canvas.height * pc.height / 100;
+        cb?.(i+1);
     }
 
+    // FIX ME: if a gif does not support transparency, the first frame will be broken
+    // with these settings, because it expects a transparency channel, which ends up 
+    // shifting the arrays such that they do not fit properly as they would with 4 channels.
+    // If all the other frames are simply patches, it can still work, as they are "transparent".
+    // Make sure to check the settings.
     const combined = combineArrays(croppedFrames);
     const palette = quantize(combined, 256, { format: 'rgba4444' });
 

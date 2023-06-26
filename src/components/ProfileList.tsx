@@ -5,18 +5,20 @@ import ProfileListItem from "./ProfileListItem";
 import styles from './styles/ProfileList.module.css';
 import { useAtom } from 'jotai';
 import { framesAtom, mediaTypeAtom, overlayAtom, profilesAtom, sourceAtom } from "../store";
-import { centerCropImage, generateGifs, generateImages, mediaTypeExtension } from "../utils/utils";
+import { centerCropImage,generateImages, mediaTypeExtension } from "../utils/utils";
 import { v4 } from "uuid";
 import JSZip from "jszip";
 import saveAs from "file-saver";
 import AppLoader from "./AppLoader";
 import AppProgressBar from "./AppProgressBar";
+import { BlobPair, GifExportInit, GifExportProgress, Profile, SliceFrame } from "../types";
+import ExportWorker from '../utils/worker?worker';
 
-const ExportOverlay = () => {
+const ExportOverlay = ({cur = 0, max = 10}) => {
     return (
         <>
             <AppLoader/>
-            <AppProgressBar text="Exporting..." variant="green" current={0} max={10}/>
+            <AppProgressBar text="Exporting" current={cur} max={max}/>
         </>
     );
 };
@@ -25,11 +27,10 @@ const ProfileList = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
     const [source,] = useAtom(sourceAtom);
     const [frames,] = useAtom(framesAtom);
-    //const [loading,] = useAtom(loadingAtom);
     const [mediaType,] = useAtom(mediaTypeAtom);
     const [rounded, setRounded] = useState(false);
     const [smallPreviews, setSmallPreviews] = useState(false);
-    const [overlay, setOverlay] = useAtom(overlayAtom);
+    const [,setOverlay] = useAtom(overlayAtom);
 
     const toggleRound = () => {
         setRounded(!rounded);
@@ -88,7 +89,30 @@ const ProfileList = () => {
         setProfiles(p);
     };
 
-    const generateFiles = async () => {
+
+    const generateGifs = async (frames: SliceFrame[], profiles: Profile[]): Promise<BlobPair[]> => {
+        return new Promise((res, rej) => {
+            const exportWorker = new ExportWorker();
+            let acc = 0;
+            exportWorker.onmessage = (e: MessageEvent<GifExportProgress>) => {
+                if(e.data.evt === 'finished'){
+                    exportWorker.terminate();
+                    res(e.data.blobs as BlobPair[]);
+                } else if (e.data.evt === 'progress'){
+                    acc++;
+                    updateOverlay(acc);
+                }
+            };
+            exportWorker.onerror = () => {
+                exportWorker.terminate();
+                rej();
+            };
+            const tf: SliceFrame[] = frames.map(f => ({delay:f.delay, dims:f.dims, imageData:f.imageData}));
+            exportWorker.postMessage({frames: tf, profiles: profiles} as GifExportInit);
+        });
+    };
+
+    const generateFiles = async (): Promise<BlobPair[]> => {
         if (!source || !profiles.length) throw new Error("no source or profiles");
         if (mediaType === 'image/jpeg' || mediaType === 'image/png') {
             return await generateImages(source, profiles);
@@ -99,23 +123,31 @@ const ProfileList = () => {
         }
     };
 
+    const updateOverlay = (cur: number) => {
+        setOverlay({isVisible: true, content: <ExportOverlay cur={cur} max={profiles.length * (frames as SliceFrame[]).length}/>});
+    };
+
+    const generateZipFile = async (blobs: BlobPair[]) => {
+        const zip = new JSZip();
+        const nameMap = new Map<string, number>();
+        blobs.forEach(b => {
+            if (b.blob == null) return;
+            let fileName = b.name;
+            const n = nameMap.get(b.name);
+            if (n) fileName += `_${n}`;
+            nameMap.set(b.name, (n || 0) + 1);
+            zip.file(`${fileName}${mediaTypeExtension(mediaType)}`, b.blob);
+        });
+        return await zip.generateAsync({ type: 'blob' });
+    };
+    
     const exportProfiles = async () => {
-        // overlay does not get set? async issue?
-        setOverlay({isVisible: true, content: <ExportOverlay/>});
+        if(mediaType === 'image/gif')
+            setOverlay({isVisible: true, content: <ExportOverlay cur={0} max={profiles.length}/>});
         try {
             const blobs = await generateFiles();
-            const zip = new JSZip();
-            const nameMap = new Map<string, number>();
-            blobs.forEach(b => {
-                if (b.blob == null) return;
-                let fileName = b.name;
-                const n = nameMap.get(b.name);
-                if (n) fileName += `_${n}`;
-                nameMap.set(b.name, (n || 0) + 1);
-                zip.file(`${fileName}${mediaTypeExtension(mediaType)}`, b.blob);
-            });
-            const content = await zip.generateAsync({ type: 'blob' });
-            saveAs(content, 'profiles.zip');
+            const zipped = await generateZipFile(blobs);
+            saveAs(zipped, 'profiles.zip');
         } catch (error) {
             console.error(error, 'could not generate files');
         } finally {
@@ -125,7 +157,7 @@ const ProfileList = () => {
 
     return (
         <div className={styles.profileList}>
-            {source && !overlay.isVisible &&
+            {source && 
                 <div className={styles.profileListInner}>
                     <div className={styles.listHeader}>
                         <h2>Profiles</h2>
