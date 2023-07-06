@@ -5,23 +5,13 @@ import ProfileListItem from "./ProfileListItem";
 import styles from './styles/ProfileList.module.css';
 import { useAtom } from 'jotai';
 import { framesAtom, mediaTypeAtom, overlayAtom, profilesAtom, sourceAtom } from "../store";
-import { centerCropImage,generateImages, mediaTypeExtension } from "../utils/utils";
+import { centerCropImage, generateImages, mediaTypeExtension } from "../utils/utils";
 import { v4 } from "uuid";
 import JSZip from "jszip";
 import saveAs from "file-saver";
-import AppLoader from "./AppLoader";
 import AppProgressBar from "./AppProgressBar";
 import { BlobPair, GifExportInit, GifExportProgress, Profile, SliceFrame } from "../types";
 import ExportWorker from '../utils/worker?worker';
-
-const ExportOverlay = ({cur = 0, max = 10}) => {
-    return (
-        <>
-            <AppLoader/>
-            <AppProgressBar text="Exporting" current={cur} max={max}/>
-        </>
-    );
-};
 
 const ProfileList = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
@@ -30,7 +20,7 @@ const ProfileList = () => {
     const [mediaType,] = useAtom(mediaTypeAtom);
     const [rounded, setRounded] = useState(false);
     const [smallPreviews, setSmallPreviews] = useState(false);
-    const [,setOverlay] = useAtom(overlayAtom);
+    const [, setOverlay] = useAtom(overlayAtom);
 
     const toggleRound = () => {
         setRounded(!rounded);
@@ -74,9 +64,9 @@ const ProfileList = () => {
     const onRename = (e: ChangeEvent<HTMLInputElement>, id: string) => {
         const profs = [...profiles];
         profs.forEach(p => {
-            if (p.id === id) {
+            if (p.id === id) 
                 p.name = e.target.value;
-            }
+            
         });
         setProfiles(profs);
     };
@@ -95,36 +85,35 @@ const ProfileList = () => {
             const exportWorker = new ExportWorker();
             let acc = 0;
             exportWorker.onmessage = (e: MessageEvent<GifExportProgress>) => {
-                if(e.data.evt === 'finished'){
+                if (e.data.evt === 'finished') {
                     exportWorker.terminate();
                     res(e.data.blobs as BlobPair[]);
-                } else if (e.data.evt === 'progress'){
+                } else if (e.data.evt === 'progress') {
                     acc++;
-                    updateOverlay(acc);
+                    updateOverlay(acc, e.data.total);
                 }
             };
             exportWorker.onerror = () => {
                 exportWorker.terminate();
                 rej();
             };
-            const tf: SliceFrame[] = frames.map(f => ({delay:f.delay, dims:f.dims, imageData:f.imageData}));
-            exportWorker.postMessage({frames: tf, profiles: profiles} as GifExportInit);
+            const tf: SliceFrame[] = frames.map(f => ({ delay: f.delay, dims: f.dims, imageData: f.imageData }));
+            exportWorker.postMessage({ frames: tf, profiles: profiles } as GifExportInit);
         });
     };
 
     const generateFiles = async (): Promise<BlobPair[]> => {
         if (!source || !profiles.length) throw new Error("no source or profiles");
-        if (mediaType === 'image/jpeg' || mediaType === 'image/png') {
+        if (mediaType === 'image/jpeg' || mediaType === 'image/png') 
             return await generateImages(source, profiles);
-        } else if (mediaType === 'image/gif' && frames) {
+         else if (mediaType === 'image/gif' && frames) 
             return await generateGifs(frames, profiles);
-        } else {
+         else 
             throw new Error("no compatible filetype found");
-        }
     };
 
-    const updateOverlay = (cur: number) => {
-        setOverlay({isVisible: true, content: <ExportOverlay cur={cur} max={profiles.length * (frames as SliceFrame[]).length}/>});
+    const updateOverlay = (cur: number, max: number) => {
+        setOverlay({ content: <AppProgressBar text="Exporting" current={cur} max={max} /> });
     };
 
     const generateZipFile = async (blobs: BlobPair[]) => {
@@ -140,10 +129,10 @@ const ProfileList = () => {
         });
         return await zip.generateAsync({ type: 'blob' });
     };
-    
+
     const exportProfiles = async () => {
-        if(mediaType === 'image/gif')
-            setOverlay({isVisible: true, content: <ExportOverlay cur={0} max={profiles.length}/>});
+        if (mediaType === 'image/gif')
+            updateOverlay(0, 10);
         try {
             const blobs = await generateFiles();
             const zipped = await generateZipFile(blobs);
@@ -151,13 +140,13 @@ const ProfileList = () => {
         } catch (error) {
             console.error(error, 'could not generate files');
         } finally {
-            setOverlay({isVisible: false, content: null});
+            setOverlay({ content: null });
         }
     };
 
     return (
         <div className={styles.profileList}>
-            {source && 
+            {source &&
                 <div className={styles.profileListInner}>
                     <div className={styles.listHeader}>
                         <h2>Profiles</h2>

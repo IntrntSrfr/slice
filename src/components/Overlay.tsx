@@ -1,11 +1,12 @@
 import styles from './styles/Overlay.module.css';
+import { ReactNode } from "react";
 
 interface Props {
     active?: boolean
-    children?: React.ReactNode
+    children?: ReactNode
 }
 
-const Overlay = ({ active = false, children}: Props) => {
+const Overlay = ({ active = false, children }: Props) => {
     return (
         <div className={`${styles.overlay} ${active ? styles.active : ''}`}>
             {children}

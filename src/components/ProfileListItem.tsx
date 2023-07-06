@@ -82,13 +82,11 @@ const ProfileListItem = (props: Props) => {
 
         if (mediaType === 'image/gif' && frames)
             advanceFrame();
-        else if ((mediaType === 'image/jpeg' || mediaType === 'image/png') && source) {
+        else if ((mediaType === 'image/jpeg' || mediaType === 'image/png') && source) 
             drawCanvas(canvasRef, source);
-        }
 
-        if (props.smallPreviews) {
+        if (props.smallPreviews) 
             updateSmallPreviews();
-        }
 
         return () => {
             if (timeoutId) clearTimeout(timeoutId);

@@ -5,7 +5,7 @@ import { defaultProfile, framesAtom, gifAtom, mediaTypeAtom, overlayAtom, profil
 import AppButton from "./AppButton";
 import { ParsedFrame, decompressFrames, parseGIF } from "gifuct-js";
 import { SliceFrame } from "../types";
-import AppLoader from "./AppLoader";
+import AppProgressBar from "./AppProgressBar";
 
 function UploadButton() {
     const [, setSource] = useAtom(sourceAtom);
@@ -23,9 +23,16 @@ function UploadButton() {
 
     const readFile = async (fr: FileReader, f: File, t: 'DataURL' | 'ArrayBuffer') => {
         return await new Promise<ArrayBuffer | string | null>((res, rej) => {
+            fr.onprogress = (ev) => {
+                if(ev.lengthComputable)
+                    updateOverlay(ev.loaded, ev.total);
+            };
             fr.onload = () => { res(fr.result); };
             fr.onerror = () => { rej(fr.error); };
-            if (t === 'DataURL') { fr.readAsDataURL(f); } else if (t === 'ArrayBuffer') { fr.readAsArrayBuffer(f); }
+            if (t === 'DataURL')
+                fr.readAsDataURL(f);
+            else if (t === 'ArrayBuffer')
+                fr.readAsArrayBuffer(f); 
         });
     };
 
@@ -58,7 +65,7 @@ function UploadButton() {
                 currentCanvas = arrToCanvas(f.patch, f.dims.height, f.dims.width);
                 if (!currentCanvas) return;
                 const imageData = new ImageData(f.patch, f.dims.height, f.dims.width);
-                fullFrames.push({ canvas: currentCanvas, imageData: imageData,  delay: f.delay, dims: f.dims });
+                fullFrames.push({ canvas: currentCanvas, imageData: imageData, delay: f.delay, dims: f.dims });
                 return;
             }
 
@@ -83,13 +90,20 @@ function UploadButton() {
         return fullFrames;
     };
 
+    const updateOverlay = (cur: number, max: number) => {
+        setOverlay({ content: <AppProgressBar text="Loading" current={cur} max={max}/> });
+    };
+
     const uploadImage = async (e: ChangeEvent<HTMLInputElement>) => {
         const inp = e.target as HTMLInputElement;
         if (!inp.files?.length) return;
-        setOverlay({isVisible: true, content: <AppLoader/>});
+        
         resetSources();
         setProfiles([defaultProfile()]);
-
+        const fileType = inp.files[0].type;
+        setMediaType(fileType);
+        updateOverlay(0, 10);
+        
         const readerDataURL = new FileReader();
         const readerArrayBuffer = new FileReader();
         try {
@@ -97,8 +111,7 @@ function UploadButton() {
             const img = new Image();
             img.src = resDataURL as string;
             setSource(img);
-            setMediaType(inp.files[0].type);
-            if (inp.files[0].type === 'image/gif') {
+            if (fileType === 'image/gif') {
                 const resArrayBuffer = await readFile(readerArrayBuffer, inp.files[0], 'ArrayBuffer');
                 const buf = resArrayBuffer as ArrayBuffer;
                 const gif = parseGIF(buf);
@@ -109,7 +122,7 @@ function UploadButton() {
         } catch (err: unknown) {
             console.log(err);
         } finally {
-            setOverlay({isVisible: false, content: null});
+            setOverlay({ content: null });
         }
     };
 

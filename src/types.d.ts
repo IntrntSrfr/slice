@@ -26,6 +26,7 @@ type GifExportInit = {
 
 type GifExportProgress = {
     evt: 'progress' | 'finished',
-    progress:number,
+    progress: number,
+    total: number,
     blobs?: BlobPair[]
 }

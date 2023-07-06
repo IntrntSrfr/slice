@@ -14,7 +14,6 @@ import { centerCropImage } from "./utils/utils";
 const App = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
     const [source,] = useAtom(sourceAtom);
-    //const [loading,] = useAtom(loadingAtom);
     const [overlay,] = useAtom(overlayAtom);
 
     const activeProfile = () => {
@@ -37,7 +36,7 @@ const App = () => {
 
     return (
         <>
-            <Overlay active={overlay.isVisible}>
+            <Overlay active={!!overlay.content}>
                 {overlay.content}
             </Overlay>
             <div className="crop-container">

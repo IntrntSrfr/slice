@@ -2,7 +2,7 @@ import { atom } from "jotai";
 import { SliceFrame, Profile } from "./types";
 import { ParsedGif } from "gifuct-js";
 import { v4 } from "uuid";
-
+import {ReactNode} from "react";
 
 export const sourceAtom = atom<HTMLImageElement | null>(null);
 export const gifAtom = atom<ParsedGif | null>(null);
@@ -16,8 +16,7 @@ export const defaultProfile = (): Profile => {
 export const profilesAtom = atom<Profile[]>([]);
 
 type Overlay = {
-    isVisible: boolean
-    content?: React.ReactNode
+    content?: ReactNode
 }
 
-export const overlayAtom = atom<Overlay>({isVisible: false, content: null});
+export const overlayAtom = atom<Overlay>({content: null});

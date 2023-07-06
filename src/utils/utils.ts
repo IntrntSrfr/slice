@@ -80,21 +80,21 @@ const combineArrays = (arrays: { data: ImageData, delay: number }[]) => {
 
 export const generateGifs = async (frames: SliceFrame[], profiles: Profile[], cb?: (cur: number) => void) => {
     return profiles.map((p) => {
-            const blob = generateGif(frames, p, cb);
-            const name = (p.name || p.id).trim();
-            return { blob, name };
-        });
+        const blob = generateGif(frames, p, cb);
+        const name = (p.name || p.id).trim();
+        return { blob, name };
+    });
 };
 
-const generateGif = (frames: SliceFrame[], profile: Profile, cb?: (cur:number)=>void) => {
+const generateGif = (frames: SliceFrame[], profile: Profile, cb?: (cur: number) => void) => {
     // preprocess palette and crop frames to fit profile
     const croppedFrames: { data: ImageData, delay: number }[] = [];
-    
+
     const dims = [0, 0];
-    for(let i = 0; i < frames.length; i++){
+    for (let i = 0; i < frames.length; i++) {
         const f = frames[i];
         const ctx = new OffscreenCanvas(f.imageData.width, f.imageData.height).getContext('2d');
-        if(!ctx) throw new Error('canvas 2D context is not available');
+        if (!ctx) throw new Error('canvas 2D context is not available');
         ctx.putImageData(f.imageData, 0, 0);
 
         const pc = (profile.crop as PercentCrop);
@@ -107,7 +107,7 @@ const generateGif = (frames: SliceFrame[], profile: Profile, cb?: (cur:number)=>
         croppedFrames.push({ data: imageData, delay: f.delay });
         dims[0] = ctx.canvas.width * pc.width / 100;
         dims[1] = ctx.canvas.height * pc.height / 100;
-        cb?.(i+1);
+        cb?.(i + 1);
     }
 
     // FIX ME: if a gif does not support transparency, the first frame will be broken
