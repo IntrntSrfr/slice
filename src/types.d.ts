@@ -22,6 +22,7 @@ type BlobPair = {
 type GifExportInit = {
     frames: SliceFrame[], 
     profiles: Profile[],
+    transparent: boolean,
 }
 
 type GifExportProgress = {

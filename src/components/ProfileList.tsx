@@ -21,6 +21,7 @@ const ProfileList = () => {
     const [rounded, setRounded] = useState(false);
     const [smallPreviews, setSmallPreviews] = useState(false);
     const [, setOverlay] = useAtom(overlayAtom);
+    const [transparent, setTransparent] = useState(false);
 
     const toggleRound = () => {
         setRounded(!rounded);
@@ -97,7 +98,7 @@ const ProfileList = () => {
                 rej();
             };
             const tf: SliceFrame[] = frames.map(f => ({ delay: f.delay, dims: f.dims, imageData: f.imageData }));
-            exportWorker.postMessage({ frames: tf, profiles: profiles } as GifExportInit);
+            exportWorker.postMessage({ frames: tf, profiles: profiles, transparent } as GifExportInit);
         });
     };
 
@@ -116,12 +117,10 @@ const ProfileList = () => {
     };
 
     const generateZipFile = async (blobs: BlobPair[]) => {
-        let fb: Blob | null = null;
         const zip = new JSZip();
         const nameMap = new Map<string, number>();
         blobs.forEach(b => {
             if (b.blob == null) return;
-            if(!fb) fb = b.blob;
             let fileName = b.name;
             const n = nameMap.get(b.name);
             if (n) fileName += `_${n}`;
@@ -129,11 +128,6 @@ const ProfileList = () => {
             zip.file(`${fileName}${mediaTypeExtension(mediaType)}`, b.blob);
         });
         
-        if(fb) {
-            const url = URL.createObjectURL(fb);
-            window.open(url, '_blank');
-        }
-
         return await zip.generateAsync({ type: 'blob' });
     };
 
@@ -143,7 +137,7 @@ const ProfileList = () => {
         try {
             const blobs = await generateFiles();
             const zipped = await generateZipFile(blobs);
-            //saveAs(zipped, 'profiles.zip');
+            saveAs(zipped, 'profiles.zip');
         } catch (error) {
             console.error(error, 'could not generate files');
         } finally {
@@ -177,9 +171,13 @@ const ProfileList = () => {
                                 onDelete={() => removeProfile(p.id)} />
                         ))}
                     </div>
-                    <div className="btn-grp fill-last">
-                        <Checkbox checked={rounded} label={"Round preview"} onChange={toggleRound} />
-                        <Checkbox checked={smallPreviews} label={"Small previews"} onChange={toggleSmallPreviews} />
+                    <div className={`btn-grp ${mediaType === 'image/gif' ? '' : 'fill-last'}`}>
+                        <Checkbox checked={rounded} label="Round preview" onChange={toggleRound} />
+                        <Checkbox checked={smallPreviews} label="Small previews" onChange={toggleSmallPreviews} />
+                        {
+                            mediaType === 'image/gif' &&
+                            <Checkbox checked={transparent} label="Transparency" onChange={() => setTransparent(!transparent)} />
+                        } 
                         <AppButton text="Export profiles" variant="green" onClick={exportProfiles} />
                     </div>
                 </div>

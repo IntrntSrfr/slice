@@ -1,6 +1,6 @@
 import { centerCrop, makeAspectCrop, PercentCrop } from "react-image-crop";
 import { BlobPair, Profile, SliceFrame } from "../types";
-import { applyPalette, GIFEncoder, quantize } from 'gifenc';
+import { applyPalette, Format, GIFEncoder, quantize } from 'gifenc';
 
 export const centerCropImage = (img: HTMLImageElement): PercentCrop => {
     const { naturalWidth: width, naturalHeight: height } = img;
@@ -68,23 +68,23 @@ export const generateImages = async (img: HTMLImageElement, profiles: Profile[])
     );
 };
 
-const generateGifPalette = (frames: { data: ImageData, delay: number }[]) => {
+const generateGifPalette = (frames: { data: ImageData, delay: number }[], format: Format) => {
     const combined = new Uint8ClampedArray(frames.length * frames[0].data.data.length);
     frames.forEach((a, i) => {
         combined.set(a.data.data, a.data.data.length*i);
     });
-    return quantize(combined, 256, { format: 'rgba4444', oneBitAlpha: true });
+    return quantize(combined, 256, { format , oneBitAlpha: true });
 };
 
-export const generateGifs = async (frames: SliceFrame[], profiles: Profile[], cb?: (cur: number) => void) => {
+export const generateGifs = async (frames: SliceFrame[], profiles: Profile[], transparent: boolean, cb?: (cur: number) => void) => {
     return profiles.map((p) => {
-        const blob = generateGif(frames, p, cb);
+        const blob = generateGif(frames, p,  transparent, cb);
         const name = (p.name || p.id).trim();
         return { blob, name };
     });
 };
 
-const generateGif = (frames: SliceFrame[], profile: Profile, cb?: (cur: number) => void) => {
+const generateGif = (frames: SliceFrame[], profile: Profile, transparent: boolean, cb?: (cur: number) => void) => {
     // preprocess palette and crop frames to fit profile
     const croppedFrames: { data: ImageData, delay: number }[] = [];
     const dims = [0, 0];
@@ -107,13 +107,14 @@ const generateGif = (frames: SliceFrame[], profile: Profile, cb?: (cur: number) 
     });
 
     // generate palette
-    const palette = generateGifPalette(croppedFrames);
+    const format: Format = transparent ? 'rgba4444' : 'rgb565';
+    const palette = generateGifPalette(croppedFrames, format);
 
     // write gif frames
     const gif = GIFEncoder();
     croppedFrames.forEach(f => {
-        const index = applyPalette(f.data.data, palette, 'rgba4444');
-        gif.writeFrame(index, dims[0], dims[1], { palette, delay: f.delay, transparent: true, dispose: -1 });
+        const index = applyPalette(f.data.data, palette, format);
+        gif.writeFrame(index, dims[0], dims[1], { palette, delay: f.delay, transparent, dispose: -1 });
     });
 
     gif.finish();
