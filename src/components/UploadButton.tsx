@@ -3,7 +3,7 @@ import { useRef, ChangeEvent } from "react";
 import { defaultProfile, framesAtom, gifAtom, mediaTypeAtom, overlayAtom, profilesAtom, sourceAtom } from "../store";
 
 import AppButton from "./AppButton";
-import { ParsedFrame, decompressFrames, parseGIF } from "gifuct-js";
+import { ParsedFrame, ParsedGif, decompressFrames, parseGIF } from "gifuct-js";
 import { SliceFrame } from "../types";
 import AppProgressBar from "./AppProgressBar";
 
@@ -42,51 +42,52 @@ function UploadButton() {
         setFrames(null);
     };
 
-    const arrToCanvas = (arr: Uint8ClampedArray, h: number, w: number) => {
-        const fakeCanvas = new OffscreenCanvas(w, h);
-        const fakeCtx = fakeCanvas.getContext('2d');
-        if (!fakeCtx) return null;
-        const imageData = new ImageData(arr, w, h);
-        fakeCtx.putImageData(imageData, 0, 0);
-        return fakeCanvas;
-    };
-
     /**
      * Expands gifs with frames that may only be smaller patches
      * to full individual frames.
      * @param frames 
      * @returns 
      */
-    const expandFrames = (frames: ParsedFrame[]) => {
+    const expandFrames = (gif: ParsedGif, frames: ParsedFrame[]) => {
         const fullFrames: SliceFrame[] = [];
-        let currentCanvas: OffscreenCanvas | null = null;
-        frames.forEach(f => {
-            if (!currentCanvas) {
-                currentCanvas = arrToCanvas(f.patch, f.dims.height, f.dims.width);
-                if (!currentCanvas) return;
-                const imageData = new ImageData(f.patch, f.dims.height, f.dims.width);
-                fullFrames.push({ canvas: currentCanvas, imageData: imageData, delay: f.delay, dims: f.dims });
-                return;
-            }
+        let lastImageData: ImageData | null = null;
+        const canvas = new OffscreenCanvas(gif.lsd.width, gif.lsd.height);
+        const ctx = canvas.getContext('2d', {willReadFrequently: true});
+        if (!ctx) throw new Error('canvas 2D context not available');
 
-            if (f.disposalType === 1) {
-                // create brand new canvas, draw the previous
-                // canvas over it, then draw the new patch.
-                // there's probably a better way to do this tbh :)
-                const newCanvas = new OffscreenCanvas(currentCanvas.width, currentCanvas.height);
-                const newCtx = newCanvas.getContext('2d');
-                if (!newCtx) return null;
-                newCtx.drawImage(currentCanvas, 0, 0);
+        for(let i = 0; i < frames.length; i++) {
+            const f = frames[i];
 
-                const nc = arrToCanvas(f.patch, f.dims.height, f.dims.width);
-                if (!nc) return;
-                newCtx.drawImage(nc, f.dims.left, f.dims.top);
-                const imageData = newCtx.getImageData(0, 0, newCtx.canvas.width, newCtx.canvas.height);
-                fullFrames.push({ canvas: newCanvas, imageData: imageData, delay: f.delay, dims: f.dims });
-                currentCanvas = newCanvas;
-            }
-        });
+            // prepare patch canvas
+            const patchCanvas = new OffscreenCanvas(f.dims.width, f.dims.height);
+            const patchCtx = patchCanvas.getContext('2d');
+            if (!patchCtx) throw new Error('canvas 2D context not available');
 
+            // set patch data
+            patchCtx.clearRect(0, 0, f.dims.width, f.dims.height);
+            const patchData = patchCtx.createImageData(f.dims.width, f.dims.height);
+            patchData.data.set(f.patch);
+            patchCtx.putImageData(patchData, 0, 0);
+            
+            // draw patch onto existing canvas and extract data
+            ctx.drawImage(patchCanvas, f.dims.left, f.dims.top);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            
+            // fully copy the current canvas and push it to the results
+            const finalCanvas = new OffscreenCanvas(gif.lsd.width, gif.lsd.height);
+            const finalCtx = finalCanvas.getContext('2d', {willReadFrequently: true});
+            if (!finalCtx) throw new Error('canvas 2D context not available');
+            finalCtx.putImageData(imageData, 0, 0);
+            fullFrames.push({canvas: finalCanvas, imageData: imageData, delay: f.delay, dims: f.dims});
+
+            // dispose of the frame
+            // for 0 and 1, do nothing
+            if (f.disposalType === 2 )
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            else if (f.disposalType === 3 && lastImageData)
+                ctx.putImageData(lastImageData, 0, 0);
+            lastImageData = imageData;
+        }
         return fullFrames;
     };
 
@@ -117,7 +118,7 @@ function UploadButton() {
                 const gif = parseGIF(buf);
                 const frames = decompressFrames(gif, true);
                 setGif(gif);
-                setFrames(expandFrames(frames));
+                setFrames(expandFrames(gif, frames));
             }
         } catch (err: unknown) {
             console.log(err);

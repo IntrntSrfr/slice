@@ -68,14 +68,12 @@ export const generateImages = async (img: HTMLImageElement, profiles: Profile[])
     );
 };
 
-const combineArrays = (arrays: { data: ImageData, delay: number }[]) => {
-    const combined = new Uint8ClampedArray(arrays.reduce((a, b) => a + b.data.data.length, 0));
-    let offset = 0;
-    arrays.forEach(a => {
-        combined.set(a.data.data, offset);
-        offset += a.data.data.length;
+const generateGifPalette = (frames: { data: ImageData, delay: number }[]) => {
+    const combined = new Uint8ClampedArray(frames.length * frames[0].data.data.length);
+    frames.forEach((a, i) => {
+        combined.set(a.data.data, a.data.data.length*i);
     });
-    return combined;
+    return quantize(combined, 256, { format: 'rgba4444', oneBitAlpha: true });
 };
 
 export const generateGifs = async (frames: SliceFrame[], profiles: Profile[], cb?: (cur: number) => void) => {
@@ -89,16 +87,14 @@ export const generateGifs = async (frames: SliceFrame[], profiles: Profile[], cb
 const generateGif = (frames: SliceFrame[], profile: Profile, cb?: (cur: number) => void) => {
     // preprocess palette and crop frames to fit profile
     const croppedFrames: { data: ImageData, delay: number }[] = [];
-
     const dims = [0, 0];
-    for (let i = 0; i < frames.length; i++) {
-        const f = frames[i];
+    frames.forEach((f,i) => {
         const ctx = new OffscreenCanvas(f.imageData.width, f.imageData.height).getContext('2d');
         if (!ctx) throw new Error('canvas 2D context is not available');
-        ctx.putImageData(f.imageData, 0, 0);
+        (ctx as OffscreenCanvasRenderingContext2D).putImageData(f.imageData, 0, 0);
 
         const pc = (profile.crop as PercentCrop);
-        const imageData = ctx.getImageData(
+        const imageData= (ctx as OffscreenCanvasRenderingContext2D).getImageData(
             ctx.canvas.width * pc.x / 100,
             ctx.canvas.height * pc.y / 100,
             ctx.canvas.width * pc.width / 100,
@@ -108,21 +104,16 @@ const generateGif = (frames: SliceFrame[], profile: Profile, cb?: (cur: number) 
         dims[0] = ctx.canvas.width * pc.width / 100;
         dims[1] = ctx.canvas.height * pc.height / 100;
         cb?.(i + 1);
-    }
+    });
 
-    // FIX ME: if a gif does not support transparency, the first frame will be broken
-    // with these settings, because it expects a transparency channel, which ends up 
-    // shifting the arrays such that they do not fit properly as they would with 4 channels.
-    // If all the other frames are simply patches, it can still work, as they are "transparent".
-    // Make sure to check the settings.
-    const combined = combineArrays(croppedFrames);
-    const palette = quantize(combined, 256, { format: 'rgba4444' });
+    // generate palette
+    const palette = generateGifPalette(croppedFrames);
 
     // write gif frames
     const gif = GIFEncoder();
     croppedFrames.forEach(f => {
         const index = applyPalette(f.data.data, palette, 'rgba4444');
-        gif.writeFrame(index, dims[0], dims[1], { palette: palette, delay: f.delay });
+        gif.writeFrame(index, dims[0], dims[1], { palette, delay: f.delay, transparent: true, dispose: -1 });
     });
 
     gif.finish();

@@ -79,7 +79,6 @@ const ProfileList = () => {
         setProfiles(p);
     };
 
-
     const generateGifs = async (frames: SliceFrame[], profiles: Profile[]): Promise<BlobPair[]> => {
         return new Promise((res, rej) => {
             const exportWorker = new ExportWorker();
@@ -117,16 +116,24 @@ const ProfileList = () => {
     };
 
     const generateZipFile = async (blobs: BlobPair[]) => {
+        let fb: Blob | null = null;
         const zip = new JSZip();
         const nameMap = new Map<string, number>();
         blobs.forEach(b => {
             if (b.blob == null) return;
+            if(!fb) fb = b.blob;
             let fileName = b.name;
             const n = nameMap.get(b.name);
             if (n) fileName += `_${n}`;
             nameMap.set(b.name, (n || 0) + 1);
             zip.file(`${fileName}${mediaTypeExtension(mediaType)}`, b.blob);
         });
+        
+        if(fb) {
+            const url = URL.createObjectURL(fb);
+            window.open(url, '_blank');
+        }
+
         return await zip.generateAsync({ type: 'blob' });
     };
 
@@ -136,7 +143,7 @@ const ProfileList = () => {
         try {
             const blobs = await generateFiles();
             const zipped = await generateZipFile(blobs);
-            saveAs(zipped, 'profiles.zip');
+            //saveAs(zipped, 'profiles.zip');
         } catch (error) {
             console.error(error, 'could not generate files');
         } finally {

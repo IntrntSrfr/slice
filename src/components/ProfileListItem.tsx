@@ -95,7 +95,7 @@ const ProfileListItem = (props: Props) => {
 
     return (
         <div className={`${styles.profile} ${props.active ? styles.active : ''}`}>
-            <div className={styles.profileMain}>
+            <div>
                 <div className={styles.profileCrop}>
                     <canvas
                         ref={canvasRef}

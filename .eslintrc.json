@@ -11,6 +11,7 @@
     "rules": {
       "react-refresh/only-export-components": "warn",
       "semi": "warn",
-      "curly": ["warn", "multi"]
+      "curly": ["warn", "multi"],
+      "eol-last": "warn"
     }
 }
