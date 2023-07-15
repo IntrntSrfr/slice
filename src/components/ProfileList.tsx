@@ -146,7 +146,7 @@ const ProfileList = () => {
                 <div className={styles.profileListInner}>
                     <div className={styles.listHeader}>
                         <h2>Profiles</h2>
-                        <div className="flex rows">
+                        <div className="flex rows" style={{justifyContent: 'center'}}>
                             <AppButton text="Add" variant="blue" onClick={addProfile} />
                             <AppButton text="Reset" variant="red" onClick={resetProfiles} />
                         </div>

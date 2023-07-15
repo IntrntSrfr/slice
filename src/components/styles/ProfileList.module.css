@@ -5,15 +5,8 @@
 }
 
 .listHeader {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-}
-
-.listHeader > :first-child{
-    margin-right: auto;
-    margin-left: 1em;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
 }
 
 .profileList {
