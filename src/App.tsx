@@ -7,12 +7,14 @@ import Overlay from "./components/Overlay";
 import Sidebar from "./components/Sidebar";
 
 import './App.css';
-import { loadingAtom, profilesAtom, sourceAtom } from "./store";
+import { overlayAtom, profilesAtom, sourceAtom } from "./store";
 import { useAtom } from "jotai";
-import { centerCropImage } from "./utils/utils";
+import { centerCropImage } from "./utils/crop";
 
 const App = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
+    const [source,] = useAtom(sourceAtom);
+    const [overlay,] = useAtom(overlayAtom);
 
     const activeProfile = () => {
         return profiles.find(p => p.active);
@@ -30,21 +32,20 @@ const App = () => {
     function onImageLoad(e: SyntheticEvent<HTMLImageElement>) {
         const crop = centerCropImage(e.currentTarget);
         updateCrop({}, crop);
-        setLoading(false);
     }
-
-    const [source, ] = useAtom(sourceAtom);
-    const [loading, setLoading] = useAtom(loadingAtom);
 
     return (
         <>
-            <Overlay active={loading} />
+            <Overlay active={!!overlay.content}>
+                {overlay.content}
+            </Overlay>
             <div className="crop-container">
-                {source &&
+                {
+                    source &&
                     <ReactCrop
                         aspect={1}
-                        minHeight={64}
-                        minWidth={64}
+                        minHeight={32}
+                        minWidth={32}
                         crop={activeProfile()?.crop}
                         onChange={updateCrop}
                         ruleOfThirds

@@ -10,8 +10,12 @@
     backdrop-filter: blur(2px);
 
     display: none;
+    
 }
 
 .active {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }

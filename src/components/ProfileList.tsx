@@ -1,28 +1,32 @@
 import { ChangeEvent, useState } from "react";
-import Button from "./Button";
+import AppButton from "./AppButton";
 import Checkbox from "./Checkbox";
 import ProfileListItem from "./ProfileListItem";
 import styles from './styles/ProfileList.module.css';
 import { useAtom } from 'jotai';
-import { profilesAtom, sourceAtom } from "../store";
-import { centerCropImage, generateBlobs } from "../utils/utils";
-import JSZip from "jszip";
+import { framesAtom, mediaTypeAtom, overlayAtom, profilesAtom, sourceAtom } from "../store";
+import { generateImages } from "../utils/gif";
 import { v4 } from "uuid";
-import { saveAs } from "file-saver";
+import JSZip from "jszip";
+import saveAs from "file-saver";
+import AppProgressBar from "./AppProgressBar";
+import { BlobPair, GifExportInit, GifExportProgress, Profile, SliceFrame } from "../types";
+import ExportWorker from '../workers/generateGif?worker';
+import { centerCropImage, mediaTypeExtension } from "../utils/crop";
 
 const ProfileList = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
     const [source,] = useAtom(sourceAtom);
+    const [frames,] = useAtom(framesAtom);
+    const [mediaType,] = useAtom(mediaTypeAtom);
     const [rounded, setRounded] = useState(false);
     const [smallPreviews, setSmallPreviews] = useState(false);
+    const [, setOverlay] = useAtom(overlayAtom);
+    const [transparent, setTransparent] = useState(false);
 
-    const toggleRound = () => {
-        setRounded(!rounded);
-    };
-
-    const toggleSmallPreviews = () => {
-        setSmallPreviews(!smallPreviews);
-    };
+    const toggleRound = () => setRounded(o => !o);
+    const toggleSmallPreviews = () => setSmallPreviews(o => !o);
+    const toggleTransparent = () => setTransparent(o => !o);
 
     const activeProfile = () => {
         return profiles.find(p => p.active);
@@ -31,7 +35,6 @@ const ProfileList = () => {
     const addProfile = () => {
         const ap = activeProfile();
         if (!ap) return;
-
         const fc = ap.crop;
         const p = [...profiles];
         const newProfile = { id: v4(), name: 'New profile', crop: fc, active: true };
@@ -58,9 +61,8 @@ const ProfileList = () => {
     const onRename = (e: ChangeEvent<HTMLInputElement>, id: string) => {
         const profs = [...profiles];
         profs.forEach(p => {
-            if (p.id === id) {
+            if (p.id === id) 
                 p.name = e.target.value;
-            }
         });
         setProfiles(profs);
     };
@@ -73,24 +75,69 @@ const ProfileList = () => {
         setProfiles(p);
     };
 
-    const exportProfiles = async () => {
-        const zip = new JSZip();
-        if (!source) return;
-
-        const crops = await generateBlobs(source, profiles);
-        const nameMap = new Map<string, number>();
-        crops.forEach(c => {
-            if (c.blob == null) return;
-            let fileName = c.name;
-            const n = nameMap.get(c.name);
-            if (n) fileName += `_${n}`;
-            nameMap.set(c.name, (n || 0) + 1);
-            zip.file(`${fileName}.png`, c.blob);
+    const generateGifs = async (frames: SliceFrame[], profiles: Profile[]): Promise<BlobPair[]> => {
+        return new Promise((res, rej) => {
+            const exportWorker = new ExportWorker();
+            let acc = 0;
+            exportWorker.onmessage = (e: MessageEvent<GifExportProgress>) => {
+                if (e.data.evt === 'finished') {
+                    exportWorker.terminate();
+                    res(e.data.blobs as BlobPair[]);
+                } else if (e.data.evt === 'progress') {
+                    acc++;
+                    updateOverlay(acc, e.data.total);
+                }
+            };
+            exportWorker.onerror = () => {
+                exportWorker.terminate();
+                rej();
+            };
+            const tf: SliceFrame[] = frames.map(f => ({ delay: f.delay, dims: f.dims, imageData: f.imageData }));
+            exportWorker.postMessage({ frames: tf, profiles: profiles, transparent } as GifExportInit);
         });
+    };
 
+    const generateFiles = async (): Promise<BlobPair[]> => {
+        if (!source || !profiles.length) throw new Error("no source or profiles");
+        if (mediaType === 'image/jpeg' || mediaType === 'image/png') 
+            return await generateImages(source, profiles);
+         else if (mediaType === 'image/gif' && frames) 
+            return await generateGifs(frames, profiles);
+         else 
+            throw new Error("no compatible filetype found");
+    };
 
-        const content = await zip.generateAsync({ type: 'blob' });
-        saveAs(content, 'profiles.zip');
+    const updateOverlay = (cur: number, max: number) => {
+        setOverlay({ content: <AppProgressBar text="Exporting" current={cur} max={max} /> });
+    };
+
+    const generateZipFile = async (blobs: BlobPair[]) => {
+        const zip = new JSZip();
+        const nameMap = new Map<string, number>();
+        blobs.forEach(b => {
+            if (b.blob == null) return;
+            let fileName = b.name;
+            const n = nameMap.get(b.name);
+            if (n) fileName += `_${n}`;
+            nameMap.set(b.name, (n || 0) + 1);
+            zip.file(`${fileName}${mediaTypeExtension(mediaType)}`, b.blob);
+        });
+        
+        return await zip.generateAsync({ type: 'blob' });
+    };
+
+    const exportProfiles = async () => {
+        if (mediaType === 'image/gif')
+            updateOverlay(0, 10);
+        try {
+            const blobs = await generateFiles();
+            const zipped = await generateZipFile(blobs);
+            saveAs(zipped, 'profiles.zip');
+        } catch (error) {
+            console.error(error, 'could not generate files');
+        } finally {
+            setOverlay({ content: null });
+        }
     };
 
     return (
@@ -99,9 +146,9 @@ const ProfileList = () => {
                 <div className={styles.profileListInner}>
                     <div className={styles.listHeader}>
                         <h2>Profiles</h2>
-                        <div className="flex rows">
-                            <Button text="Add" variant="blue" onClick={addProfile} />
-                            <Button text="Reset" variant="red" onClick={resetProfiles} />
+                        <div className="flex rows" style={{justifyContent: 'center'}}>
+                            <AppButton text="Add" variant="blue" onClick={addProfile} />
+                            <AppButton text="Reset" variant="red" onClick={resetProfiles} />
                         </div>
                     </div>
                     <div className={styles.profiles}>
@@ -119,10 +166,14 @@ const ProfileList = () => {
                                 onDelete={() => removeProfile(p.id)} />
                         ))}
                     </div>
-                    <div className="btn-grp fill-last">
-                        <Checkbox checked={rounded} label={"Round preview"} onChange={toggleRound} />
-                        <Checkbox checked={smallPreviews} label={"Small previews"} onChange={toggleSmallPreviews} />
-                        <Button text="Export profiles" variant="green" onClick={exportProfiles} />
+                    <div className={`btn-grp ${mediaType === 'image/gif' ? '' : 'fill-last'}`}>
+                        <Checkbox checked={rounded} label="Round preview" onChange={toggleRound} />
+                        <Checkbox checked={smallPreviews} label="Small previews" onChange={toggleSmallPreviews} />
+                        {
+                            mediaType === 'image/gif' &&
+                            <Checkbox checked={transparent} label="Transparency" onChange={toggleTransparent} />
+                        } 
+                        <AppButton text="Export profiles" variant="green" onClick={exportProfiles} />
                     </div>
                 </div>
             }

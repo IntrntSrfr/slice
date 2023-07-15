@@ -1,8 +1,8 @@
 import { ChangeEvent, RefObject, useEffect, useRef } from 'react';
 import { Crop } from 'react-image-crop';
 import { useAtom } from 'jotai';
-import { sourceAtom } from '../store';
-import Button from './Button';
+import { framesAtom, mediaTypeAtom, sourceAtom } from '../store';
+import AppButton from './AppButton';
 import styles from './styles/ProfileListItem.module.css';
 
 
@@ -14,7 +14,7 @@ interface DeleteProps {
 const DeleteButton = (props: DeleteProps) => {
     if (props.onlyProfile) return null;
     return (
-        <Button text='Delete' variant={'red'} filled onClick={props.onDelete} />
+        <AppButton text='Delete' variant={'red'} filled onClick={props.onDelete} />
     );
 };
 
@@ -33,12 +33,15 @@ interface Props {
 
 const ProfileListItem = (props: Props) => {
     const [source,] = useAtom(sourceAtom);
+    const [frames,] = useAtom(framesAtom);
+    const [mediaType,] = useAtom(mediaTypeAtom);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const canvasRefSmall = useRef<HTMLCanvasElement>(null);
     const canvasRefSmaller = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
-        const drawCanvas = (canvas: RefObject<HTMLCanvasElement>, src: HTMLImageElement) => {
+        if (!props.crop) return;
+        const drawCanvas = (canvas: RefObject<HTMLCanvasElement>, src: HTMLImageElement | OffscreenCanvas) => {
             if ((source == null) || (canvas.current == null)) return;
             const ctx = canvas.current.getContext('2d');
             if (ctx == null) return;
@@ -53,9 +56,21 @@ const ProfileListItem = (props: Props) => {
                 0, 0, ctx.canvas.width, ctx.canvas.height);
         };
 
-        if (!source) return;
-        drawCanvas(canvasRef, source);
-        if (props.smallPreviews) {
+        let currentFrameIndex = 0;
+        let timeoutId: string | number | NodeJS.Timeout | null | undefined = null;
+        const advanceFrame = () => {
+            if (!frames) return;
+            drawCanvas(canvasRef, frames[currentFrameIndex].canvas as OffscreenCanvas);
+            currentFrameIndex = (currentFrameIndex + 1) % frames.length;
+            if (timeoutId) clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                advanceFrame();
+                if (props.smallPreviews)
+                    updateSmallPreviews();
+            }, frames[currentFrameIndex].delay);
+        };
+
+        const updateSmallPreviews = () => {
             [canvasRefSmall, canvasRefSmaller].forEach(c => {
                 if (!canvasRef.current || !c.current) return;
                 const ctx = c.current.getContext('2d');
@@ -63,12 +78,24 @@ const ProfileListItem = (props: Props) => {
                 ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 ctx.drawImage(canvasRef.current, 0, 0, ctx.canvas.width, ctx.canvas.height);
             });
-        }
-    }, [props.crop, props.smallPreviews, source]);
+        };
+
+        if (mediaType === 'image/gif' && frames)
+            advanceFrame();
+        else if ((mediaType === 'image/jpeg' || mediaType === 'image/png') && source) 
+            drawCanvas(canvasRef, source);
+
+        if (props.smallPreviews) 
+            updateSmallPreviews();
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, [props.crop, props.smallPreviews, source, frames, mediaType]);
 
     return (
         <div className={`${styles.profile} ${props.active ? styles.active : ''}`}>
-            <div className={styles.profileMain}>
+            <div>
                 <div className={styles.profileCrop}>
                     <canvas
                         ref={canvasRef}
@@ -96,7 +123,7 @@ const ProfileListItem = (props: Props) => {
                 </div>
             </div>
             <div className={styles.profileInfo}>
-                <Button text={props.active ? 'Selected' : 'Select'} variant={'blue'} filled onClick={props.onSelect} />
+                <AppButton text={props.active ? 'Selected' : 'Select'} variant={'blue'} filled={props.active} onClick={props.onSelect} />
                 <DeleteButton onDelete={props.onDelete} onlyProfile={props.onlyProfile} />
             </div>
         </div>

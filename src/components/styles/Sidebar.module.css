@@ -4,6 +4,7 @@
     width: 30em;
     height: 100vh;
     background-color: #1d1e30;
+    user-select: none;
 }
 
 .header{

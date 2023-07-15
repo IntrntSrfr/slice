@@ -107,7 +107,7 @@ button{
     --btn-border-color: rgb(0, 109, 218);
     --btn-fill-color: rgb(0, 109, 218);
     --btn-fill-color-hover: rgb(19, 98, 177);
-    border: 1px solid rgb(0, 109, 218);
+    border-color:rgb(0, 109, 218);
 }
 
 .blue:hover {
@@ -118,7 +118,7 @@ button{
     --btn-border-color: rgb(0, 148, 74);
     --btn-fill-color: rgb(0, 148, 74);
     --btn-fill-color-hover: rgb(11, 105, 58);
-    border: 1px solid rgb(0, 148, 74);
+    border-color:rgb(0, 148, 74);
 }
 
 .green:hover {
