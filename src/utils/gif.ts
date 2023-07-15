@@ -7,14 +7,15 @@ import { cropCanvas } from "./crop";
 /**
  * Expands gifs with frames that may only be smaller patches
  * to full individual frames.
- * @param frames 
- * @returns 
+ * @param gif gif info
+ * @param frames gif frames
+ * @returns
  */
 export const expandFrames = (gif: ParsedGif, frames: ParsedFrame[]) => {
     const fullFrames: SliceFrame[] = [];
     let lastImageData: ImageData | null = null;
     const canvas = new OffscreenCanvas(gif.lsd.width, gif.lsd.height);
-    const ctx = canvas.getContext('2d', {willReadFrequently: true});
+    const ctx = canvas.getContext('2d', {willReadFrequently: true}) as OffscreenCanvasRenderingContext2D | null;
     if (!ctx) throw new Error('canvas 2D context not available');
 
     for(let i = 0; i < frames.length; i++) {
@@ -22,7 +23,7 @@ export const expandFrames = (gif: ParsedGif, frames: ParsedFrame[]) => {
 
         // prepare patch canvas
         const patchCanvas = new OffscreenCanvas(f.dims.width, f.dims.height);
-        const patchCtx = patchCanvas.getContext('2d');
+        const patchCtx = patchCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D | null;
         if (!patchCtx) throw new Error('canvas 2D context not available');
 
         // set patch data
@@ -30,14 +31,14 @@ export const expandFrames = (gif: ParsedGif, frames: ParsedFrame[]) => {
         const patchData = patchCtx.createImageData(f.dims.width, f.dims.height);
         patchData.data.set(f.patch);
         patchCtx.putImageData(patchData, 0, 0);
-        
+
         // draw patch onto existing canvas and extract data
         ctx.drawImage(patchCanvas, f.dims.left, f.dims.top);
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        
+
         // fully copy the current canvas and push it to the results
         const finalCanvas = new OffscreenCanvas(gif.lsd.width, gif.lsd.height);
-        const finalCtx = finalCanvas.getContext('2d', {willReadFrequently: true});
+        const finalCtx = finalCanvas.getContext('2d', {willReadFrequently: true}) as OffscreenCanvasRenderingContext2D | null;
         if (!finalCtx) throw new Error('canvas 2D context not available');
         finalCtx.putImageData(imageData, 0, 0);
         fullFrames.push({canvas: finalCanvas, imageData: imageData, delay: f.delay, dims: f.dims});
