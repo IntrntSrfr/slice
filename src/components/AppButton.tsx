@@ -8,20 +8,6 @@ const buttonColors = [
 
 type ButtonType = typeof buttonColors[number];
 
-const buttonKinds = [
-    "primary",
-    "secondary",
-    "reversed",
-    "attention",
-    "alert",
-    "outlined",
-    "outlinedAlert",
-    "ghost",
-    "ghostSecondary",
-];
-
-type ButtonKind = typeof buttonKinds[number]
-
 interface Props {
     onClick?: () => void,
     style?: CSSProperties,
