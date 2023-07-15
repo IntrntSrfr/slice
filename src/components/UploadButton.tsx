@@ -3,9 +3,9 @@ import { useRef, ChangeEvent } from "react";
 import { defaultProfile, framesAtom, gifAtom, mediaTypeAtom, overlayAtom, profilesAtom, sourceAtom } from "../store";
 
 import AppButton from "./AppButton";
-import { ParsedFrame, ParsedGif, decompressFrames, parseGIF } from "gifuct-js";
-import { SliceFrame } from "../types";
+import { decompressFrames, parseGIF } from "gifuct-js";
 import AppProgressBar from "./AppProgressBar";
+import { expandFrames } from "../utils/gif";
 
 function UploadButton() {
     const [, setSource] = useAtom(sourceAtom);
@@ -40,55 +40,6 @@ function UploadButton() {
         setSource(null);
         setGif(null);
         setFrames(null);
-    };
-
-    /**
-     * Expands gifs with frames that may only be smaller patches
-     * to full individual frames.
-     * @param frames 
-     * @returns 
-     */
-    const expandFrames = (gif: ParsedGif, frames: ParsedFrame[]) => {
-        const fullFrames: SliceFrame[] = [];
-        let lastImageData: ImageData | null = null;
-        const canvas = new OffscreenCanvas(gif.lsd.width, gif.lsd.height);
-        const ctx = canvas.getContext('2d', {willReadFrequently: true});
-        if (!ctx) throw new Error('canvas 2D context not available');
-
-        for(let i = 0; i < frames.length; i++) {
-            const f = frames[i];
-
-            // prepare patch canvas
-            const patchCanvas = new OffscreenCanvas(f.dims.width, f.dims.height);
-            const patchCtx = patchCanvas.getContext('2d');
-            if (!patchCtx) throw new Error('canvas 2D context not available');
-
-            // set patch data
-            patchCtx.clearRect(0, 0, f.dims.width, f.dims.height);
-            const patchData = patchCtx.createImageData(f.dims.width, f.dims.height);
-            patchData.data.set(f.patch);
-            patchCtx.putImageData(patchData, 0, 0);
-            
-            // draw patch onto existing canvas and extract data
-            ctx.drawImage(patchCanvas, f.dims.left, f.dims.top);
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            
-            // fully copy the current canvas and push it to the results
-            const finalCanvas = new OffscreenCanvas(gif.lsd.width, gif.lsd.height);
-            const finalCtx = finalCanvas.getContext('2d', {willReadFrequently: true});
-            if (!finalCtx) throw new Error('canvas 2D context not available');
-            finalCtx.putImageData(imageData, 0, 0);
-            fullFrames.push({canvas: finalCanvas, imageData: imageData, delay: f.delay, dims: f.dims});
-
-            // dispose of the frame
-            // for 0 and 1, do nothing
-            if (f.disposalType === 2 )
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            else if (f.disposalType === 3 && lastImageData)
-                ctx.putImageData(lastImageData, 0, 0);
-            lastImageData = imageData;
-        }
-        return fullFrames;
     };
 
     const updateOverlay = (cur: number, max: number) => {

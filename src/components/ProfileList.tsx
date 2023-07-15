@@ -5,13 +5,14 @@ import ProfileListItem from "./ProfileListItem";
 import styles from './styles/ProfileList.module.css';
 import { useAtom } from 'jotai';
 import { framesAtom, mediaTypeAtom, overlayAtom, profilesAtom, sourceAtom } from "../store";
-import { centerCropImage, generateImages, mediaTypeExtension } from "../utils/utils";
+import { generateImages } from "../utils/gif";
 import { v4 } from "uuid";
 import JSZip from "jszip";
 import saveAs from "file-saver";
 import AppProgressBar from "./AppProgressBar";
 import { BlobPair, GifExportInit, GifExportProgress, Profile, SliceFrame } from "../types";
-import ExportWorker from '../utils/worker?worker';
+import ExportWorker from '../workers/generateGif?worker';
+import { centerCropImage, mediaTypeExtension } from "../utils/crop";
 
 const ProfileList = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
@@ -23,13 +24,9 @@ const ProfileList = () => {
     const [, setOverlay] = useAtom(overlayAtom);
     const [transparent, setTransparent] = useState(false);
 
-    const toggleRound = () => {
-        setRounded(!rounded);
-    };
-
-    const toggleSmallPreviews = () => {
-        setSmallPreviews(!smallPreviews);
-    };
+    const toggleRound = () => setRounded(o => !o);
+    const toggleSmallPreviews = () => setSmallPreviews(o => !o);
+    const toggleTransparent = () => setTransparent(o => !o);
 
     const activeProfile = () => {
         return profiles.find(p => p.active);
@@ -38,7 +35,6 @@ const ProfileList = () => {
     const addProfile = () => {
         const ap = activeProfile();
         if (!ap) return;
-
         const fc = ap.crop;
         const p = [...profiles];
         const newProfile = { id: v4(), name: 'New profile', crop: fc, active: true };
@@ -67,7 +63,6 @@ const ProfileList = () => {
         profs.forEach(p => {
             if (p.id === id) 
                 p.name = e.target.value;
-            
         });
         setProfiles(profs);
     };
@@ -176,7 +171,7 @@ const ProfileList = () => {
                         <Checkbox checked={smallPreviews} label="Small previews" onChange={toggleSmallPreviews} />
                         {
                             mediaType === 'image/gif' &&
-                            <Checkbox checked={transparent} label="Transparency" onChange={() => setTransparent(!transparent)} />
+                            <Checkbox checked={transparent} label="Transparency" onChange={toggleTransparent} />
                         } 
                         <AppButton text="Export profiles" variant="green" onClick={exportProfiles} />
                     </div>

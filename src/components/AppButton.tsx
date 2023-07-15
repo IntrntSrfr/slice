@@ -1,6 +1,26 @@
 import { CSSProperties } from "react";
 
-type ButtonType = 'blue' | 'green' | 'red'
+const buttonColors = [
+    'blue',
+    'green',
+    'red'
+];
+
+type ButtonType = typeof buttonColors[number];
+
+const buttonKinds = [
+    "primary",
+    "secondary",
+    "reversed",
+    "attention",
+    "alert",
+    "outlined",
+    "outlinedAlert",
+    "ghost",
+    "ghostSecondary",
+];
+
+type ButtonKind = typeof buttonKinds[number]
 
 interface Props {
     onClick?: () => void,

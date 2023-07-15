@@ -1,52 +1,56 @@
-import { centerCrop, makeAspectCrop, PercentCrop } from "react-image-crop";
+import { PercentCrop } from "react-image-crop";
 import { BlobPair, Profile, SliceFrame } from "../types";
 import { applyPalette, Format, GIFEncoder, quantize } from 'gifenc';
+import { ParsedFrame, ParsedGif } from "gifuct-js";
+import { cropCanvas } from "./crop";
 
-export const centerCropImage = (img: HTMLImageElement): PercentCrop => {
-    const { naturalWidth: width, naturalHeight: height } = img;
-    const crop = centerCrop(
-        makeAspectCrop({
-            unit: '%',
-            width: 25,
-        },
-            1,
-            width,
-            height
-        ),
-        width,
-        height
-    );
-    return crop;
-};
+/**
+ * Expands gifs with frames that may only be smaller patches
+ * to full individual frames.
+ * @param frames 
+ * @returns 
+ */
+export const expandFrames = (gif: ParsedGif, frames: ParsedFrame[]) => {
+    const fullFrames: SliceFrame[] = [];
+    let lastImageData: ImageData | null = null;
+    const canvas = new OffscreenCanvas(gif.lsd.width, gif.lsd.height);
+    const ctx = canvas.getContext('2d', {willReadFrequently: true});
+    if (!ctx) throw new Error('canvas 2D context not available');
 
-export const mediaTypeExtension = (mediaType: string) => {
-    switch (mediaType) {
-        case 'image/jpeg':
-            return '.jpg';
-        case 'image/png':
-            return '.png';
-        case 'image/gif':
-            return '.gif';
-        default:
-            return '';
+    for(let i = 0; i < frames.length; i++) {
+        const f = frames[i];
+
+        // prepare patch canvas
+        const patchCanvas = new OffscreenCanvas(f.dims.width, f.dims.height);
+        const patchCtx = patchCanvas.getContext('2d');
+        if (!patchCtx) throw new Error('canvas 2D context not available');
+
+        // set patch data
+        patchCtx.clearRect(0, 0, f.dims.width, f.dims.height);
+        const patchData = patchCtx.createImageData(f.dims.width, f.dims.height);
+        patchData.data.set(f.patch);
+        patchCtx.putImageData(patchData, 0, 0);
+        
+        // draw patch onto existing canvas and extract data
+        ctx.drawImage(patchCanvas, f.dims.left, f.dims.top);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // fully copy the current canvas and push it to the results
+        const finalCanvas = new OffscreenCanvas(gif.lsd.width, gif.lsd.height);
+        const finalCtx = finalCanvas.getContext('2d', {willReadFrequently: true});
+        if (!finalCtx) throw new Error('canvas 2D context not available');
+        finalCtx.putImageData(imageData, 0, 0);
+        fullFrames.push({canvas: finalCanvas, imageData: imageData, delay: f.delay, dims: f.dims});
+
+        // dispose of the frame
+        // for 0 and 1, do nothing
+        if (f.disposalType === 2 )
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        else if (f.disposalType === 3 && lastImageData)
+            ctx.putImageData(lastImageData, 0, 0);
+        lastImageData = imageData;
     }
-};
-
-const cropCanvas = (src: HTMLImageElement | HTMLCanvasElement, crop: PercentCrop) => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('canvas 2D context is not available');
-
-    ctx.canvas.width = src.width * crop.width / 100;
-    ctx.canvas.height = src.height * crop.height / 100;
-    ctx.drawImage(
-        src,
-        src.width * crop.x / 100,
-        src.height * crop.y / 100,
-        src.width * crop.width / 100,
-        src.height * crop.height / 100,
-        0, 0, ctx.canvas.width, ctx.canvas.height);
-    return canvas;
+    return fullFrames;
 };
 
 const generateImage = async (img: HTMLImageElement, crop: PercentCrop): Promise<Blob | null> => {

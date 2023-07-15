@@ -1,5 +1,5 @@
 import { GifExportProgress, GifExportInit } from "../types";
-import { generateGifs } from "./utils";
+import { generateGifs } from "../utils/gif";
 
 onmessage = async (e: MessageEvent<GifExportInit>) => {
     const totalFrames = e.data.frames.length * e.data.profiles.length;

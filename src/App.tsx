@@ -9,7 +9,7 @@ import Sidebar from "./components/Sidebar";
 import './App.css';
 import { overlayAtom, profilesAtom, sourceAtom } from "./store";
 import { useAtom } from "jotai";
-import { centerCropImage } from "./utils/utils";
+import { centerCropImage } from "./utils/crop";
 
 const App = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
