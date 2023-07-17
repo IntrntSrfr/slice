@@ -1,4 +1,3 @@
-import { PercentCrop } from "react-image-crop";
 import { BlobPair, Profile, SliceFrame } from "../types";
 import { applyPalette, Format, GIFEncoder, quantize } from 'gifenc';
 import { ParsedFrame, ParsedGif } from "gifuct-js";
@@ -54,31 +53,24 @@ export const expandFrames = (gif: ParsedGif, frames: ParsedFrame[]) => {
     return fullFrames;
 };
 
-const generateImage = async (img: HTMLImageElement, crop: PercentCrop): Promise<Blob | null> => {
-    try {
-        const canvas = cropCanvas(img, crop);
-        return await new Promise(res => canvas.toBlob(res));
-    } catch (error) {
-        return null;
-    }
-};
-
 export const generateImages = async (img: HTMLImageElement, profiles: Profile[]): Promise<BlobPair[]> => {
     return await Promise.all(
         profiles.map(async (p) => {
-            const blob = await generateImage(img, p.crop);
+            const blob = await generateImage(img, p);
             const name = (p.name || p.id).trim();
             return { blob, name };
         })
     );
 };
 
-const generateGifPalette = (frames: { data: ImageData, delay: number }[], format: Format) => {
-    const combined = new Uint8ClampedArray(frames.length * frames[0].data.data.length);
-    frames.forEach((a, i) => {
-        combined.set(a.data.data, a.data.data.length*i);
-    });
-    return quantize(combined, 256, { format , oneBitAlpha: true });
+const generateImage = async (img: HTMLImageElement, profile: Profile): Promise<Blob | null> => {
+    if(!profile.crop) return null;
+    try {
+        const canvas = cropCanvas(img, profile.crop);
+        return await new Promise(res => canvas.toBlob(res));
+    } catch (error) {
+        return null;
+    }
 };
 
 export const generateGifs = async (frames: SliceFrame[], profiles: Profile[], transparent: boolean, cb?: (cur: number) => void) => {
@@ -91,23 +83,25 @@ export const generateGifs = async (frames: SliceFrame[], profiles: Profile[], tr
 
 const generateGif = (frames: SliceFrame[], profile: Profile, transparent: boolean, cb?: (cur: number) => void) => {
     // preprocess palette and crop frames to fit profile
+    const { crop } = profile;
+    if(!crop) return null;
+    
     const croppedFrames: { data: ImageData, delay: number }[] = [];
     const dims = [0, 0];
     frames.forEach((f,i) => {
         const ctx = new OffscreenCanvas(f.imageData.width, f.imageData.height).getContext('2d');
         if (!ctx) throw new Error('canvas 2D context is not available');
         (ctx as OffscreenCanvasRenderingContext2D).putImageData(f.imageData, 0, 0);
-
-        const pc = (profile.crop as PercentCrop);
+        
         const imageData= (ctx as OffscreenCanvasRenderingContext2D).getImageData(
-            ctx.canvas.width * pc.x / 100,
-            ctx.canvas.height * pc.y / 100,
-            ctx.canvas.width * pc.width / 100,
-            ctx.canvas.height * pc.height / 100,
+            ctx.canvas.width * crop.x / 100,
+            ctx.canvas.height * crop.y / 100,
+            ctx.canvas.width * crop.width / 100,
+            ctx.canvas.height * crop.height / 100,
         );
         croppedFrames.push({ data: imageData, delay: f.delay });
-        dims[0] = ctx.canvas.width * pc.width / 100;
-        dims[1] = ctx.canvas.height * pc.height / 100;
+        dims[0] = ctx.canvas.width * crop.width / 100;
+        dims[1] = ctx.canvas.height * crop.height / 100;
         cb?.(i + 1);
     });
 
@@ -124,4 +118,12 @@ const generateGif = (frames: SliceFrame[], profile: Profile, transparent: boolea
 
     gif.finish();
     return new Blob([gif.bytesView()], { type: 'image/gif' });
+};
+
+const generateGifPalette = (frames: { data: ImageData, delay: number }[], format: Format) => {
+    const combined = new Uint8ClampedArray(frames.length * frames[0].data.data.length);
+    frames.forEach((a, i) => {
+        combined.set(a.data.data, a.data.data.length*i);
+    });
+    return quantize(combined, 256, { format , oneBitAlpha: true });
 };

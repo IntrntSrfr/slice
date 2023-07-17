@@ -111,7 +111,7 @@ const ProfileList = () => {
         const zip = new JSZip();
         const nameMap = new Map<string, number>();
         blobs.forEach(b => {
-            if (b.blob == null) return;
+            if (b.blob == null) return; // consider adding error message :)
             let fileName = b.name;
             const n = nameMap.get(b.name);
             if (n) fileName += `_${n}`;
