@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { useState } from "react";
 import AppButton from "./AppButton";
 import Checkbox from "./Checkbox";
 import ProfileListItem from "./ProfileListItem";
@@ -35,21 +35,20 @@ const ProfileList = () => {
     const addProfile = () => {
         const ap = activeProfile();
         if (!ap) return;
-        const fc = ap.crop;
-        const p = [...profiles];
-        const newProfile = { id: v4(), name: 'New profile', crop: fc, active: true };
-        p.forEach(prof => prof.active = false);
-        setProfiles([newProfile, ...p]);
+        const newProfile: Profile = { id: v4(), name: 'New profile', crop: ap.crop, active: true };
+        setProfiles([newProfile].concat(profiles.map(p => ({...p, active: false}))));
     };
 
     const removeProfile = (id: string) => {
         if (profiles.length <= 1) return;
-        let profs = [...profiles];
-        // add some check if profile is active
-        // if deleting active profile, move active profile to nearest?
-
-        profs = profs.filter(p => p.id !== id);
-        setProfiles(profs);
+        const newProfs = profiles.filter(p => p.id !== id);
+        const deletedProf = profiles.find(p => p.id === id);
+        if(deletedProf?.active){
+            const index = profiles.findIndex(p => p.id === id);
+            const newActiveIndex = index === newProfs.length ? index - 1 : index;
+            newProfs[newActiveIndex].active = true;
+        }
+        setProfiles(newProfs);
     };
 
     const resetProfiles = () => {
@@ -58,21 +57,18 @@ const ProfileList = () => {
         setProfiles([{ id: v4(), name: 'New profile', crop: crop, active: true }]);
     };
 
-    const onRename = (e: ChangeEvent<HTMLInputElement>, id: string) => {
-        const profs = [...profiles];
-        profs.forEach(p => {
-            if (p.id === id) 
-                p.name = e.target.value;
-        });
-        setProfiles(profs);
+    const onRename = (id: string, newName: string) => {
+        setProfiles(profiles.map(p => p.id === id 
+            ? {...p, name: newName}
+            : p
+        ));
     };
 
     const setActiveProfile = (id: string) => {
-        const p = [...profiles];
-        p.forEach((prof) => {
-            prof.active = prof.id === id;
-        });
-        setProfiles(p);
+        setProfiles(profiles.map(p => p.id === id 
+            ? {...p, active: true} 
+            : {...p, active: false}
+        ));
     };
 
     const generateGifs = async (frames: SliceFrame[], profiles: Profile[]): Promise<BlobPair[]> => {
@@ -140,45 +136,55 @@ const ProfileList = () => {
         }
     };
 
+    if (!source) return <div className={styles.profileList}></div>;
+    
     return (
         <div className={styles.profileList}>
-            {source &&
-                <div className={styles.profileListInner}>
-                    <div className={styles.listHeader}>
-                        <h2>Profiles</h2>
-                        <div className="flex rows" style={{justifyContent: 'center'}}>
-                            <AppButton text="Add" variant="blue" onClick={addProfile} />
-                            <AppButton text="Reset" variant="red" onClick={resetProfiles} />
-                        </div>
-                    </div>
-                    <div className={styles.profiles}>
-                        {profiles.map((p, i) => (
-                            <ProfileListItem key={i}
-                                id={p.id}
-                                active={p.active}
-                                crop={p.crop}
-                                name={p.name}
-                                rounded={rounded}
-                                smallPreviews={smallPreviews}
-                                onlyProfile={profiles.length <= 1}
-                                onRename={(e) => onRename(e, p.id)}
-                                onSelect={() => setActiveProfile(p.id)}
-                                onDelete={() => removeProfile(p.id)} />
-                        ))}
-                    </div>
-                    <div className={`btn-grp ${mediaType === 'image/gif' ? '' : 'fill-last'}`}>
-                        <Checkbox checked={rounded} label="Round preview" onChange={toggleRound} />
-                        <Checkbox checked={smallPreviews} label="Small previews" onChange={toggleSmallPreviews} />
-                        {
-                            mediaType === 'image/gif' &&
-                            <Checkbox checked={transparent} label="Transparency" onChange={toggleTransparent} />
-                        } 
-                        <AppButton text="Export profiles" variant="green" onClick={exportProfiles} />
-                    </div>
+            <div className={styles.profileListInner}>
+                <Header onAdd={addProfile} onReset={resetProfiles} />
+                <div className={styles.profiles}>
+                    {profiles.map((p, i) => (
+                        p.crop ? 
+                        <ProfileListItem key={i}
+                            profile={p}
+                            rounded={rounded}
+                            smallPreviews={smallPreviews}
+                            onlyProfile={profiles.length <= 1}
+                            onRename={(e) => onRename(p.id, e.target.value)}
+                            onSelect={() => setActiveProfile(p.id)}
+                            onDelete={() => removeProfile(p.id)} />
+                        : null
+                    ))}
                 </div>
-            }
+                <div className={`btn-grp ${mediaType === 'image/gif' ? '' : 'fill-last'}`}>
+                    <Checkbox checked={rounded} label="Round preview" onChange={toggleRound} />
+                    <Checkbox checked={smallPreviews} label="Small previews" onChange={toggleSmallPreviews} />
+                    {
+                        mediaType === 'image/gif' &&
+                        <Checkbox checked={transparent} label="Transparency" onChange={toggleTransparent} />
+                    } 
+                    <AppButton text="Export profiles" variant="green" onClick={exportProfiles} />
+                </div>
+            </div>
         </div>
     );
 };
 
 export default ProfileList;
+
+interface HeaderProps {
+    onAdd: () => void;
+    onReset: () => void;
+} 
+
+const Header = ({onAdd, onReset}: HeaderProps) => {
+    return (
+        <div className={styles.listHeader}>
+            <h2>Profiles</h2>
+            <div className="flex rows" style={{justifyContent: 'center'}}>
+                <AppButton text="Add" variant="blue" onClick={onAdd} />
+                <AppButton text="Reset" variant="red" onClick={onReset} />
+            </div>
+        </div>
+    );
+};

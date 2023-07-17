@@ -10,7 +10,7 @@ export const mediaTypeAtom = atom<string>('');
 export const framesAtom = atom<SliceFrame[] | null>(null);
 
 export const defaultProfile = (): Profile => {
-    return { id: v4(), name: 'New profile', crop: null, active: true };
+    return { id: v4(), name: 'New profile', active: true };
 };
 
 export const profilesAtom = atom<Profile[]>([]);

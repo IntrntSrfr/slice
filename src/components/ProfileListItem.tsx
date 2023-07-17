@@ -1,9 +1,9 @@
 import { ChangeEvent, RefObject, useEffect, useRef } from 'react';
-import { Crop } from 'react-image-crop';
 import { useAtom } from 'jotai';
 import { framesAtom, mediaTypeAtom, sourceAtom } from '../store';
 import AppButton from './AppButton';
 import styles from './styles/ProfileListItem.module.css';
+import { Profile } from '../types';
 
 
 interface DeleteProps {
@@ -19,12 +19,9 @@ const DeleteButton = (props: DeleteProps) => {
 };
 
 interface Props {
-    id: string,
-    name: string
-    active: boolean
+    profile: Profile
     rounded: boolean
     smallPreviews: boolean
-    crop: Crop,
     onlyProfile: boolean,
     onRename: (e: ChangeEvent<HTMLInputElement>) => void,
     onSelect: () => void,
@@ -32,6 +29,8 @@ interface Props {
 }
 
 const ProfileListItem = (props: Props) => {
+    const {name, active, crop} = props.profile;
+    
     const [source,] = useAtom(sourceAtom);
     const [frames,] = useAtom(framesAtom);
     const [mediaType,] = useAtom(mediaTypeAtom);
@@ -40,7 +39,7 @@ const ProfileListItem = (props: Props) => {
     const canvasRefSmaller = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
-        if (!props.crop) return;
+        if (!crop) return;
         const drawCanvas = (canvas: RefObject<HTMLCanvasElement>, src: HTMLImageElement | OffscreenCanvas) => {
             if ((source == null) || (canvas.current == null)) return;
             const ctx = canvas.current.getContext('2d');
@@ -49,10 +48,10 @@ const ProfileListItem = (props: Props) => {
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             ctx.drawImage(
                 src,
-                src.width * props.crop.x / 100,
-                src.height * props.crop.y / 100,
-                src.width * props.crop.width / 100,
-                src.height * props.crop.height / 100,
+                src.width * crop.x / 100,
+                src.height * crop.y / 100,
+                src.width * crop.width / 100,
+                src.height * crop.height / 100,
                 0, 0, ctx.canvas.width, ctx.canvas.height);
         };
 
@@ -91,10 +90,10 @@ const ProfileListItem = (props: Props) => {
         return () => {
             if (timeoutId) clearTimeout(timeoutId);
         };
-    }, [props.crop, props.smallPreviews, source, frames, mediaType]);
+    }, [crop, props.smallPreviews, source, frames, mediaType]);
 
     return (
-        <div className={`${styles.profile} ${props.active ? styles.active : ''}`}>
+        <div className={`${styles.profile} ${active ? styles.active : ''}`}>
             <div>
                 <div className={styles.profileCrop}>
                     <canvas
@@ -103,27 +102,19 @@ const ProfileListItem = (props: Props) => {
                         height="256"
                         width="256"
                     />
-                    <div className={styles.miniPreviews} style={{ display: props.smallPreviews ? 'flex' : 'none' }}>
-                        <canvas
-                            ref={canvasRefSmall}
-                            className={`${styles.profileCanvasSmall} ${props.rounded ? styles.rounded : ''}`}
-                            height="96"
-                            width="96"
-                        />
-                        <canvas
-                            ref={canvasRefSmaller}
-                            className={`${styles.profileCanvasSmaller} ${props.rounded ? styles.rounded : ''}`}
-                            height="64"
-                            width="64"
-                        />
-                    </div>
+                    <SmallPreviews 
+                        show={props.smallPreviews} 
+                        rounded={props.rounded} 
+                        smallPreview={canvasRefSmall} 
+                        smallerPreview={canvasRefSmaller} 
+                    />
                 </div>
                 <div className={styles.profileName}>
-                    <input type="text" value={props.name} onChange={props.onRename} />
+                    <input type="text" value={name} onChange={props.onRename} />
                 </div>
             </div>
             <div className={styles.profileInfo}>
-                <AppButton text={props.active ? 'Selected' : 'Select'} variant={'blue'} filled={props.active} onClick={props.onSelect} />
+                <AppButton text={active ? 'Selected' : 'Select'} variant={'blue'} filled={active} onClick={props.onSelect} />
                 <DeleteButton onDelete={props.onDelete} onlyProfile={props.onlyProfile} />
             </div>
         </div>
@@ -131,3 +122,30 @@ const ProfileListItem = (props: Props) => {
 };
 
 export default ProfileListItem;
+
+interface SmallPreviewsProps {
+    show: boolean;
+    rounded: boolean;
+    smallPreview: RefObject<HTMLCanvasElement>;
+    smallerPreview: RefObject<HTMLCanvasElement>;
+}
+
+const SmallPreviews = (props: SmallPreviewsProps) => {
+    if (!props.show) return null;
+    return (
+        <div className={styles.miniPreviews} >
+            <canvas
+                ref={props.smallPreview}
+                className={`${styles.profileCanvasSmall} ${props.rounded ? styles.rounded : ''}`}
+                height="96"
+                width="96"
+            />
+            <canvas
+                ref={props.smallerPreview}
+                className={`${styles.profileCanvasSmaller} ${props.rounded ? styles.rounded : ''}`}
+                height="64"
+                width="64"
+            />
+        </div>
+    );
+};

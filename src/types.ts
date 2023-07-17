@@ -1,31 +1,31 @@
-import { Crop } from "react-image-crop";
+import { PercentCrop } from "react-image-crop";
 
-type Profile = {
+export type Profile = {
     id: string
     name: string
     active: boolean
-    crop: Partial<Omit<Crop>>
+    crop?: PercentCrop
 }
 
-type SliceFrame = {
+export type SliceFrame = {
     canvas?: OffscreenCanvas
     imageData: ImageData
     delay: number
     dims: { width: number; height: number; top: number; left: number }
 }
 
-type BlobPair = {
+export type BlobPair = {
     blob: Blob | null
     name: string
 }
 
-type GifExportInit = {
+export type GifExportInit = {
     frames: SliceFrame[], 
     profiles: Profile[],
     transparent: boolean,
 }
 
-type GifExportProgress = {
+export type GifExportProgress = {
     evt: 'progress' | 'finished',
     progress: number,
     total: number,
