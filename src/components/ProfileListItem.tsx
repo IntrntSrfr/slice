@@ -19,13 +19,14 @@ const DeleteButton = (props: DeleteProps) => {
 };
 
 interface Props {
-    profile: Profile
-    rounded: boolean
-    smallPreviews: boolean
-    onlyProfile: boolean,
-    onRename: (e: ChangeEvent<HTMLInputElement>) => void,
-    onSelect: () => void,
-    onDelete: () => void
+    profile: Profile;
+    frameIndex: number;
+    rounded: boolean;
+    smallPreviews: boolean;
+    onlyProfile: boolean;
+    onRename: (e: ChangeEvent<HTMLInputElement>) => void;
+    onSelect: () => void;
+    onDelete: () => void;
 }
 
 const ProfileListItem = (props: Props) => {
@@ -55,20 +56,6 @@ const ProfileListItem = (props: Props) => {
                 0, 0, ctx.canvas.width, ctx.canvas.height);
         };
 
-        let currentFrameIndex = 0;
-        let timeoutId: string | number | NodeJS.Timeout | null | undefined = null;
-        const advanceFrame = () => {
-            if (!frames) return;
-            drawCanvas(canvasRef, frames[currentFrameIndex].canvas as OffscreenCanvas);
-            currentFrameIndex = (currentFrameIndex + 1) % frames.length;
-            if (timeoutId) clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => {
-                advanceFrame();
-                if (props.smallPreviews)
-                    updateSmallPreviews();
-            }, frames[currentFrameIndex].delay);
-        };
-
         const updateSmallPreviews = () => {
             [canvasRefSmall, canvasRefSmaller].forEach(c => {
                 if (!canvasRef.current || !c.current) return;
@@ -79,18 +66,13 @@ const ProfileListItem = (props: Props) => {
             });
         };
 
-        if (mediaType === 'image/gif' && frames)
-            advanceFrame();
+        if(mediaType === 'image/gif' && props.frameIndex >= 0 && frames?.length) 
+            drawCanvas(canvasRef, frames[props.frameIndex].canvas as OffscreenCanvas);
         else if ((mediaType === 'image/jpeg' || mediaType === 'image/png') && source) 
             drawCanvas(canvasRef, source);
-
         if (props.smallPreviews) 
             updateSmallPreviews();
-
-        return () => {
-            if (timeoutId) clearTimeout(timeoutId);
-        };
-    }, [crop, props.smallPreviews, source, frames, mediaType]);
+    }, [crop, props.smallPreviews, source, frames, mediaType, props.frameIndex]);
 
     return (
         <div className={`${styles.profile} ${active ? styles.active : ''}`}>

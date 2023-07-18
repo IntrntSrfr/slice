@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AppButton from "./AppButton";
 import Checkbox from "./Checkbox";
 import ProfileListItem from "./ProfileListItem";
@@ -70,6 +70,18 @@ const ProfileList = () => {
             : {...p, active: false}
         ));
     };
+
+    const [frameIndex, setFrameIndex] = useState<number>(-1);
+    useEffect(() => {
+        let timeoutId: string | number | NodeJS.Timeout | undefined = undefined;
+        const advanceFrame = (index: number) => {
+            if(!frames?.length) return;
+            setFrameIndex(index);
+            timeoutId = setTimeout(() => advanceFrame((index + 1) % frames.length), frames[index].delay);
+        };
+        if (frames?.length) advanceFrame(0);
+        return () => clearTimeout(timeoutId);
+    }, [frames]);
 
     const generateGifs = async (frames: SliceFrame[], profiles: Profile[]): Promise<BlobPair[]> => {
         return new Promise((res, rej) => {
@@ -147,6 +159,7 @@ const ProfileList = () => {
                         p.crop ? 
                         <ProfileListItem key={i}
                             profile={p}
+                            frameIndex={frameIndex}
                             rounded={rounded}
                             smallPreviews={smallPreviews}
                             onlyProfile={profiles.length <= 1}
