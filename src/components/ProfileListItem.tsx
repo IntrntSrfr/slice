@@ -1,6 +1,4 @@
 import { ChangeEvent, RefObject, useEffect, useRef } from 'react';
-import { useAtom } from 'jotai';
-import { framesAtom, mediaTypeAtom, sourceAtom } from '../store';
 import AppButton from './AppButton';
 import styles from './styles/ProfileListItem.module.css';
 import { Profile } from '../types';
@@ -20,7 +18,7 @@ const DeleteButton = (props: DeleteProps) => {
 
 interface Props {
     profile: Profile;
-    frameIndex: number;
+    image: HTMLImageElement | OffscreenCanvas | null;
     rounded: boolean;
     smallPreviews: boolean;
     onlyProfile: boolean;
@@ -31,18 +29,14 @@ interface Props {
 
 const ProfileListItem = (props: Props) => {
     const {name, active, crop} = props.profile;
-    
-    const [source,] = useAtom(sourceAtom);
-    const [frames,] = useAtom(framesAtom);
-    const [mediaType,] = useAtom(mediaTypeAtom);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const canvasRefSmall = useRef<HTMLCanvasElement>(null);
     const canvasRefSmaller = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
         if (!crop) return;
-        const drawCanvas = (canvas: RefObject<HTMLCanvasElement>, src: HTMLImageElement | OffscreenCanvas) => {
-            if ((source == null) || (canvas.current == null)) return;
+        const drawCanvas = (canvas: RefObject<HTMLCanvasElement>, src: HTMLImageElement | OffscreenCanvas | null) => {
+            if ((src == null) || (canvas.current == null)) return;
             const ctx = canvas.current.getContext('2d');
             if (ctx == null) return;
 
@@ -66,13 +60,10 @@ const ProfileListItem = (props: Props) => {
             });
         };
 
-        if(mediaType === 'image/gif' && props.frameIndex >= 0 && frames?.length) 
-            drawCanvas(canvasRef, frames[props.frameIndex].canvas as OffscreenCanvas);
-        else if ((mediaType === 'image/jpeg' || mediaType === 'image/png') && source) 
-            drawCanvas(canvasRef, source);
+        drawCanvas(canvasRef, props.image);
         if (props.smallPreviews) 
             updateSmallPreviews();
-    }, [crop, props.smallPreviews, source, frames, mediaType, props.frameIndex]);
+    }, [crop, props.image, props.smallPreviews]);
 
     return (
         <div className={`${styles.profile} ${active ? styles.active : ''}`}>
