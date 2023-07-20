@@ -11,6 +11,9 @@
         "lint-fix": "eslint ./src --fix --ext ts,tsx"
     },
     "dependencies": {
+        "@fortawesome/fontawesome-svg-core": "^6.4.0",
+        "@fortawesome/free-solid-svg-icons": "^6.4.0",
+        "@fortawesome/react-fontawesome": "^0.2.0",
         "@types/file-saver": "^2.0.5",
         "@types/uuid": "^9.0.0",
         "file-saver": "^2.0.5",

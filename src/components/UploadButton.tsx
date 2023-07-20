@@ -7,6 +7,9 @@ import { decompressFrames, parseGIF } from "gifuct-js";
 import AppProgressBar from "./AppProgressBar";
 import { expandFrames } from "../utils/gif";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowUpFromBracket } from "@fortawesome/free-solid-svg-icons";
+
 function UploadButton() {
     const [, setSource] = useAtom(sourceAtom);
     const [, setGif] = useAtom(gifAtom);
@@ -80,7 +83,9 @@ function UploadButton() {
 
     return (
         <div>
-            <AppButton text="Upload image" variant="green" style={{ width: '100%' }} onClick={clickUpload} />
+            <AppButton variant="green" style={{ width: '100%' }} onClick={clickUpload} >
+                <FontAwesomeIcon icon={faArrowUpFromBracket} />Upload image
+            </AppButton>
             <input
                 ref={inpRef}
                 type={'file'}

@@ -3,18 +3,8 @@ import AppButton from './AppButton';
 import styles from './styles/ProfileListItem.module.css';
 import { Profile } from '../types';
 
-
-interface DeleteProps {
-    onlyProfile: boolean,
-    onDelete: () => void
-}
-
-const DeleteButton = (props: DeleteProps) => {
-    if (props.onlyProfile) return null;
-    return (
-        <AppButton text='Delete' variant={'red'} filled onClick={props.onDelete} />
-    );
-};
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
     profile: Profile;
@@ -67,8 +57,8 @@ const ProfileListItem = (props: Props) => {
 
     return (
         <div className={`${styles.profile} ${active ? styles.active : ''}`}>
-            <div>
-                <div className={styles.profileCrop}>
+            <div onClick={props.onSelect}>
+                <div className={styles.profileCrop}  >
                     <canvas
                         ref={canvasRef}
                         className={`${styles.profileCanvas} ${props.rounded ? styles.rounded : ''}`}
@@ -82,14 +72,16 @@ const ProfileListItem = (props: Props) => {
                         smallerPreview={canvasRefSmaller} 
                     />
                 </div>
-                <div className={styles.profileName}>
-                    <input type="text" value={name} onChange={props.onRename} />
+                <div className={styles.profileFooter}>
+                    <div className={styles.profileCheckbox} >
+                        <input type="checkbox" checked={active} readOnly/>
+                    </div>
+                    <div className={styles.profileName}>
+                        <input type="text" value={name} onChange={props.onRename} />
+                    </div>
                 </div>
             </div>
-            <div className={styles.profileInfo}>
-                <AppButton text={active ? 'Selected' : 'Select'} variant={'blue'} filled={active} onClick={props.onSelect} />
-                <DeleteButton onDelete={props.onDelete} onlyProfile={props.onlyProfile} />
-            </div>
+            <DeleteButton onDelete={props.onDelete} show={!props.onlyProfile}/>
         </div>
     );
 };
@@ -120,5 +112,18 @@ const SmallPreviews = (props: SmallPreviewsProps) => {
                 width="64"
             />
         </div>
+    );
+};
+
+interface DeleteProps {
+    onDelete: () => void;
+    show: boolean
+}
+
+const DeleteButton = ({onDelete, show}: DeleteProps) => {
+    return (
+        <AppButton variant={'red'} filled onClick={onDelete} className={`${styles.deleteBtn} ${show?styles.active:''}`} >
+            <FontAwesomeIcon icon={faTrash} /> 
+        </AppButton>
     );
 };

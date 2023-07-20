@@ -14,6 +14,9 @@ import { BlobPair, GifExportInit, GifExportProgress, Profile, SliceFrame } from 
 import ExportWorker from '../workers/generateGif?worker';
 import { centerCropImage, mediaTypeExtension } from "../utils/crop";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFileExport } from "@fortawesome/free-solid-svg-icons";
+
 const ProfileList = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
     const [source,] = useAtom(sourceAtom);
@@ -184,7 +187,9 @@ const ProfileList = () => {
                         mediaType === 'image/gif' &&
                         <Checkbox checked={transparent} label="Transparency" onChange={toggleTransparent} />
                     } 
-                    <AppButton text="Export profiles" variant="green" onClick={exportProfiles} />
+                    <AppButton variant="green" onClick={exportProfiles} >
+                        <FontAwesomeIcon icon={faFileExport}/>Export profiles 
+                    </AppButton>
                 </div>
             </div>
         </div>
@@ -203,8 +208,8 @@ const Header = ({onAdd, onReset}: HeaderProps) => {
         <div className={styles.listHeader}>
             <h2>Profiles</h2>
             <div className="flex rows" style={{justifyContent: 'center'}}>
-                <AppButton text="Add" variant="blue" onClick={onAdd} />
-                <AppButton text="Reset" variant="red" onClick={onReset} />
+                <AppButton variant="blue" onClick={onAdd} >Add</AppButton>
+                <AppButton variant="red" onClick={onReset} >Reset</AppButton>
             </div>
         </div>
     );

@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 interface Props {
     active?: boolean
-    children?: ReactNode
+    children: ReactNode
 }
 
 const Overlay = ({ active = false, children }: Props) => {

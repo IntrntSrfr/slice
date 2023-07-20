@@ -1,14 +1,24 @@
 .profile {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     background-color: rgba(73, 74, 94, 0.627);
     border-radius: 5px;
+    cursor: pointer;
+    position: relative;
+    
+    border: solid 1px transparent;
+    transition: border-color 0.1s ease-in-out;
+}
+
+.profile.active{
+    border: 1px solid rgb(0, 109, 218);
 }
 
 .profileCanvas {
-    height: 180px;
-    width: 180px;
+    height: 100%;
+    width: 100%;
     border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
     display: flex;
     transition: 0.1s;
 }
@@ -17,16 +27,68 @@
   position: relative;
 }
 
+.profileFooter {
+    display: flex;
+    flex-direction: row;
+    border-top: 1px solid #494A5E;
+}
+
+.profileCheckbox {
+    display: flex;
+    padding: 0 0.5em;
+    cursor: pointer;
+}
+
+.profileCheckbox input {
+    width: 1.25em;
+    cursor: pointer;
+}
+
 .profileName {
-    width: calc(180px - 2em);
-    padding: .75em 1em;
+    width: 100%;
+    position: relative;
+    padding: .75em;
 
     font-size: 1rem;
     color: rgb(224, 224, 224);
-    backdrop-filter: blur(5px);
-    
-    border-bottom-left-radius: 5px;
-    border-top: 1px solid #494A5E;
+    border-left: 1px solid #494A5E;
+}
+
+.profileName::after{
+    content: "";
+    position: absolute;
+    bottom: .5em;
+    left: 5%;
+    height: 1px;
+    width: 90%;
+    background-color: rgb(0, 109, 218);
+}
+
+.profileName > input{
+    width: 100%;
+    background-color: transparent;
+    color: inherit;
+    font-size: 1rem;
+
+    outline: none;
+    padding: 0;
+    border: none;
+}
+
+.deleteBtn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0.25em;
+    z-index: 999;
+
+    opacity: 0;
+    pointer-events: none;
+}
+
+.deleteBtn.active {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 .miniPreviews {
@@ -52,44 +114,6 @@
   width: 32px;
 }
 
-.profileName::after{
-    content: "";
-    position: absolute;
-    bottom: .5em;
-    left: 5%;
-    height: 1px;
-    width: 90%;
-    background-color: rgb(0, 109, 218);
-}
-
-.profileName > input{
-    width: 100%;
-    background-color: transparent;
-    color: inherit;
-    font-size: 1rem;
-
-    outline: none;
-    padding: 0;
-    border: none;
-}
-
 .rounded {
     border-radius: 50%;
-}
-
-.profileInfo {
-    flex: 1 0 auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 0.25em;
-    
-    background-color: #494A5E;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-    transition: 0.25s;
-}
-
-.active .profileInfo {
-    background-color: #6d6e86;
 }
