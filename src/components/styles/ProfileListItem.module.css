@@ -50,7 +50,7 @@
     padding: .75em;
 
     font-size: 1rem;
-    color: rgb(224, 224, 224);
+    color: hsl(0, 0%, 75%);
     border-left: 1px solid #494A5E;
 }
 

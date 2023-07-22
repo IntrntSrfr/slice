@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AppButton from "./AppButton";
 import Checkbox from "./Checkbox";
 import ProfileListItem from "./ProfileListItem";
@@ -15,17 +15,20 @@ import ExportWorker from '../workers/generateGif?worker';
 import { centerCropImage, mediaTypeExtension } from "../utils/crop";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileExport } from "@fortawesome/free-solid-svg-icons";
+import { faFileExport, faPlus, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 
 const ProfileList = () => {
     const [profiles, setProfiles] = useAtom(profilesAtom);
     const [source,] = useAtom(sourceAtom);
     const [frames,] = useAtom(framesAtom);
     const [mediaType,] = useAtom(mediaTypeAtom);
+    const [, setOverlay] = useAtom(overlayAtom);
+    
     const [rounded, setRounded] = useState(false);
     const [smallPreviews, setSmallPreviews] = useState(false);
-    const [, setOverlay] = useAtom(overlayAtom);
     const [transparent, setTransparent] = useState(false);
+
+    const profileListRef = useRef<HTMLDivElement>(null);
 
     const toggleRound = () => setRounded(o => !o);
     const toggleSmallPreviews = () => setSmallPreviews(o => !o);
@@ -42,6 +45,25 @@ const ProfileList = () => {
         setProfiles([newProfile].concat(profiles.map(p => ({...p, active: false}))));
     };
 
+    /**
+     * adds new profile and scrolls to top of profile list
+     * 
+     * @returns 
+     */
+    const handleAddProfile = () => {
+        addProfile();
+        const ap = activeProfile();
+        if (!ap || !profileListRef.current) return;
+        profileListRef.current.scrollTo({top:0, behavior:'smooth'});
+    };
+
+    /**
+     * removes a profile based on an ID. If the removed profile was
+     * active, it sets the closest profile as active.
+     * 
+     * @param id item ID
+     * @returns 
+     */
     const removeProfile = (id: string) => {
         if (profiles.length <= 1) return;
         const newProfs = profiles.filter(p => p.id !== id);
@@ -54,8 +76,16 @@ const ProfileList = () => {
         setProfiles(newProfs);
     };
 
+    /**
+     * resets the profile list back to one single profile
+     * with a center crop.
+     * 
+     * @returns 
+     */
     const resetProfiles = () => {
         if (!source || profiles.length <= 1) return;
+        const ok = confirm('Resetting will remove all your current profiles. Are you sure?');
+        if(!ok) return;
         const crop = centerCropImage(source);
         setProfiles([{ id: v4(), name: 'New profile', crop: crop, active: true }]);
     };
@@ -164,8 +194,8 @@ const ProfileList = () => {
     return (
         <div className={styles.profileList}>
             <div className={styles.profileListInner}>
-                <Header onAdd={addProfile} onReset={resetProfiles} />
-                <div className={styles.profiles}>
+                <Header onAdd={handleAddProfile} onReset={resetProfiles} />
+                <div ref={profileListRef} className={styles.profiles}>
                     {profiles.map((p, i) => (
                         p.crop ? 
                         <ProfileListItem key={i}
@@ -208,8 +238,12 @@ const Header = ({onAdd, onReset}: HeaderProps) => {
         <div className={styles.listHeader}>
             <h2>Profiles</h2>
             <div className="flex rows" style={{justifyContent: 'center'}}>
-                <AppButton variant="blue" onClick={onAdd} >Add</AppButton>
-                <AppButton variant="red" onClick={onReset} >Reset</AppButton>
+                <AppButton variant="blue" onClick={onAdd} >
+                    <FontAwesomeIcon icon={faPlus} />
+                </AppButton>
+                <AppButton variant="red" onClick={onReset} >
+                    <FontAwesomeIcon icon={faRotateLeft} />
+                </AppButton>
             </div>
         </div>
     );

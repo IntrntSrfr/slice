@@ -22,11 +22,12 @@ const App = () => {
 
     function updateCrop(_crop: Partial<Crop>, percentCrop: PercentCrop) {
         if (!percentCrop.height || !percentCrop.width) return;
-        const p = [...profiles];
-        const active = p.find(p => p.active);
-        if (!active) return;
-        active.crop = percentCrop;
-        setProfiles(p);
+        const ap = activeProfile();
+        if (!ap) return;
+        setProfiles(profiles.map(p => p.id === ap.id 
+            ? {...p, crop: percentCrop}
+            : p
+        ));
     }
 
     function onImageLoad(e: SyntheticEvent<HTMLImageElement>) {
