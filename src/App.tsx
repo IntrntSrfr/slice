@@ -1,4 +1,4 @@
-import { SyntheticEvent, useEffect, useRef } from "react";
+import { SyntheticEvent } from "react";
 
 import './App.css';
 import Overlay from "./components/Overlay";
@@ -8,23 +8,21 @@ import AppProgressBar from "./components/AppProgressBar";
 
 import { centerCropImage } from "./utils/crop";
 import { expandFrames } from "./utils/gif";
-import { defaultProfile, framesAtom, gifAtom, mediaTypeAtom, overlayAtom, profilesAtom, sourceAtom } from "./store";
 
-import { useAtom } from "jotai";
+import { useReducerAtom } from 'jotai/utils';
+import { profilesAtom, profilesReducer } from "./store/profiles";
+import { overlayAtom, overlayReducer } from "./store/overlay";
+import { mediaAtom, mediaReducer } from "./store/media";
+
 import ReactCrop, { Crop, PercentCrop } from "react-image-crop";
 import 'react-image-crop/dist/ReactCrop.css';
 import { parseGIF, decompressFrames } from "gifuct-js";
 
 const App = () => {
-    const [profiles, setProfiles] = useAtom(profilesAtom);
-    const [source, setSource] = useAtom(sourceAtom);
-    const [overlay, setOverlay] = useAtom(overlayAtom);
-    const [, setGif] = useAtom(gifAtom);
-    const [, setMediaType] = useAtom(mediaTypeAtom);
-    const [, setFrames] = useAtom(framesAtom);
+    const [profiles, dispatchProfiles] = useReducerAtom(profilesAtom, profilesReducer);
+    const [overlay, dispatchOverlay] = useReducerAtom(overlayAtom, overlayReducer );
+    const [media, dispatchMedia] = useReducerAtom(mediaAtom, mediaReducer);
     
-    const containerRef = useRef<HTMLDivElement>(null);
-
     const activeProfile = () => {
         return profiles.find(p => p.active);
     };
@@ -33,10 +31,7 @@ const App = () => {
         if (!percentCrop.height || !percentCrop.width) return;
         const ap = activeProfile();
         if (!ap) return;
-        setProfiles(profiles.map(p => p.id === ap.id 
-            ? {...p, crop: percentCrop}
-            : p
-        ));
+        dispatchProfiles({type: 'set_crop', id: ap.id, crop: percentCrop});
     };
 
     const onImageLoad = (e: SyntheticEvent<HTMLImageElement>) => {
@@ -44,26 +39,11 @@ const App = () => {
         updateCrop({}, crop);
     };
 
-    useEffect(() => {
-        if(!containerRef.current) return;
-        const refCopy = containerRef.current;
-
-        const weed = (f: DragEvent) => {
-            f.preventDefault();
-            console.log(f);
-        };
-
-        refCopy.addEventListener('drop', weed);
-        return () => refCopy?.removeEventListener('drop', weed);
-    }, []);
-
     const readFile = async (fr: FileReader, f: File, t: 'DataURL' | 'ArrayBuffer') => {
         return await new Promise<ArrayBuffer | string | null>((res, rej) => {
             fr.onprogress = (ev) => {
-                if(ev.lengthComputable){
+                if(ev.lengthComputable)
                     updateOverlay(ev.loaded, ev.total, t === 'DataURL' ? 'media' : 'frames');
-                    console.log(JSON.stringify(ev));
-                }
             };
             fr.onload = () => { res(fr.result); };
             fr.onerror = () => { rej(fr.error); };
@@ -75,22 +55,20 @@ const App = () => {
     };
 
     const resetSources = () => {
-        setSource(null);
-        setGif(null);
-        setFrames(null);
-        setProfiles([defaultProfile()]);
-        setMediaType('');
+        dispatchMedia({type: 'reset'});
+        dispatchProfiles({type: 'reset'});
     };
 
     const updateOverlay = (cur: number, max: number, label: 'media' | 'frames') => {
-        setOverlay({ content: <AppProgressBar text={`Loading ${label}`} current={cur} max={max}/> });
+        dispatchOverlay({type: 'set', content: <AppProgressBar text={`Loading ${label}`} current={cur} max={max}/> });
     };
 
     const uploadImage = async (file: File) => {
         resetSources();
         const fileType = file.type;
-        setMediaType(fileType);
         updateOverlay(0, 10, 'media');
+        dispatchMedia({type: 'setMediaType', mediaType: fileType});
+        dispatchMedia({type: 'setLoading', isLoading: true});
         
         const readerDataURL = new FileReader();
         const readerArrayBuffer = new FileReader();
@@ -98,32 +76,33 @@ const App = () => {
             const resDataURL = await readFile(readerDataURL, file, 'DataURL');
             const img = new Image();
             img.src = resDataURL as string;
-            setSource(img);
+            dispatchMedia({type: 'setSource', source: img});
             if (fileType === 'image/gif') {
                 updateOverlay(0, 10, 'frames');
                 const resArrayBuffer = await readFile(readerArrayBuffer, file, 'ArrayBuffer');
                 const buf = resArrayBuffer as ArrayBuffer;
                 const gif = parseGIF(buf);
                 const frames = decompressFrames(gif, true);
-                setGif(gif);
-                setFrames(expandFrames(gif, frames));
+                dispatchMedia({type: 'setGif', gif});
+                dispatchMedia({type: 'setFrames', frames: expandFrames(gif, frames)});
             }
         } catch (err: unknown) {
             console.log(err);
         } finally {
-            setOverlay({ content: null });
+            dispatchMedia({type: 'setLoading', isLoading: false});
+            dispatchOverlay({type: 'set', content: null});
         }
     };
 
     return (
         <>
-            <Overlay active={!!overlay.content}>
-                {overlay.content}
+            <Overlay active={!!overlay}>
+                {overlay}
             </Overlay>
             <Dropzone onUpload={uploadImage}/>
             <div className="crop-container">
                 {
-                    source &&
+                    media.source && !media.isLoading &&
                     <ReactCrop
                         aspect={1}
                         minHeight={32}
@@ -134,7 +113,7 @@ const App = () => {
                         circularCrop
                         style={{ maxHeight: 'inherit', userSelect: 'none' }}
                     >
-                        <img src={source.src} onLoad={onImageLoad} />
+                        <img src={media.source.src} onLoad={onImageLoad} />
                     </ReactCrop>
                 }
             </div>

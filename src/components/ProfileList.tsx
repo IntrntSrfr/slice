@@ -1,28 +1,30 @@
 import { useEffect, useRef, useState } from "react";
+
+import styles from './styles/ProfileList.module.css';
 import AppButton from "./AppButton";
 import Checkbox from "./Checkbox";
 import ProfileListItem from "./ProfileListItem";
-import styles from './styles/ProfileList.module.css';
-import { useAtom } from 'jotai';
-import { defaultProfile, framesAtom, mediaTypeAtom, overlayAtom, profilesAtom, sourceAtom } from "../store";
+import AppProgressBar from "./AppProgressBar";
+
+import ExportWorker from '../workers/generateGif?worker';
 import { generateImages } from "../utils/gif";
-import { v4 } from "uuid";
+import { centerCropImage, mediaTypeExtension } from "../utils/crop";
+import { BlobPair, GifExportInit, GifExportProgress, Profile, SliceFrame } from "../types";
+
+import { useReducerAtom } from 'jotai/utils';
+import { profilesAtom, profilesReducer } from "../store/profiles";
+import { overlayAtom, overlayReducer } from "../store/overlay";
+import { mediaAtom, mediaReducer } from "../store/media";
+
 import JSZip from "jszip";
 import saveAs from "file-saver";
-import AppProgressBar from "./AppProgressBar";
-import { BlobPair, GifExportInit, GifExportProgress, Profile, SliceFrame } from "../types";
-import ExportWorker from '../workers/generateGif?worker';
-import { centerCropImage, mediaTypeExtension } from "../utils/crop";
-
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileExport, faPlus, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
 
 const ProfileList = () => {
-    const [profiles, setProfiles] = useAtom(profilesAtom);
-    const [source,] = useAtom(sourceAtom);
-    const [frames,] = useAtom(framesAtom);
-    const [mediaType,] = useAtom(mediaTypeAtom);
-    const [, setOverlay] = useAtom(overlayAtom);
+    const [profiles, dispatchProfiles] = useReducerAtom(profilesAtom, profilesReducer);
+    const [, dispatchOverlay] = useReducerAtom(overlayAtom, overlayReducer );
+    const [media,] = useReducerAtom(mediaAtom, mediaReducer);
     
     const [rounded, setRounded] = useState(false);
     const [smallPreviews, setSmallPreviews] = useState(false);
@@ -34,26 +36,14 @@ const ProfileList = () => {
     const toggleSmallPreviews = () => setSmallPreviews(o => !o);
     const toggleTransparent = () => setTransparent(o => !o);
 
-    const activeProfile = () => {
-        return profiles.find(p => p.active);
-    };
-
-    const addProfile = () => {
-        const ap = activeProfile();
-        if (!ap) return;
-        const newProfile: Profile = { id: v4(), name: 'New profile', crop: ap.crop, active: true };
-        setProfiles([newProfile].concat(profiles.map(p => ({...p, active: false}))));
-    };
-
     /**
      * adds new profile and scrolls to top of profile list
      * 
      * @returns 
      */
     const handleAddProfile = () => {
-        addProfile();
-        const ap = activeProfile();
-        if (!ap || !profileListRef.current) return;
+        dispatchProfiles({type: 'add'});
+        if (!profileListRef.current) return;
         profileListRef.current.scrollTo({top:0, behavior:'smooth'});
     };
 
@@ -66,14 +56,7 @@ const ProfileList = () => {
      */
     const removeProfile = (id: string) => {
         if (profiles.length <= 1) return;
-        const newProfs = profiles.filter(p => p.id !== id);
-        const deletedProf = profiles.find(p => p.id === id);
-        if(deletedProf?.active){
-            const index = profiles.findIndex(p => p.id === id);
-            const newActiveIndex = index === newProfs.length ? index - 1 : index;
-            newProfs[newActiveIndex].active = true;
-        }
-        setProfiles(newProfs);
+        dispatchProfiles({type: 'remove', id});
     };
 
     /**
@@ -83,44 +66,34 @@ const ProfileList = () => {
      * @returns 
      */
     const resetProfiles = () => {
-        if (!source || profiles.length <= 1) return;
+        if (!media.source || profiles.length <= 1) return;
         const ok = confirm('Resetting will remove all your current profiles. Are you sure?');
         if(!ok) return;
-        const crop = centerCropImage(source);
-        setProfiles([{...defaultProfile(), crop}]);
-    };
-
-    const onRename = (id: string, newName: string) => {
-        setProfiles(profiles.map(p => p.id === id 
-            ? {...p, name: newName}
-            : p
-        ));
-    };
-
-    const setActiveProfile = (id: string) => {
-        setProfiles(profiles.map(p => p.id === id 
-            ? {...p, active: true} 
-            : {...p, active: false}
-        ));
+        const crop = centerCropImage(media.source);
+        dispatchProfiles({type: 'reset', crop});
     };
 
     const [frameIndex, setFrameIndex] = useState<number>(-1);
     useEffect(() => {
+        const frameLength = media.frames?.length;
+        if(!frameLength) return;
+
         let timeoutId: string | number | NodeJS.Timeout | undefined = undefined;
         const advanceFrame = (index: number) => {
-            if(!frames?.length || mediaType !== 'image/gif') return;
+            if(!media.frames || media.mediaType !== 'image/gif') return;
             setFrameIndex(index);
-            timeoutId = setTimeout(() => advanceFrame((index + 1) % frames.length), frames[index].delay);
+            timeoutId = setTimeout(() => advanceFrame((index + 1) % frameLength), media.frames[index].delay);
         };
-        if (frames?.length) advanceFrame(0);
+        
+        advanceFrame(0);
         return () => clearTimeout(timeoutId);
-    }, [frames, mediaType]);
+    }, [media]);
     
     const currentImage = () => {
-        if(frames && frameIndex >= 0) 
-            return frames[frameIndex].canvas || null;
-        else if ((mediaType === 'image/jpeg' || mediaType === 'image/png') && source) 
-            return source;
+        if(media.frames && frameIndex >= 0 && frameIndex < media.frames.length) 
+            return media.frames[frameIndex].canvas || null;
+        else if ((media.mediaType === 'image/jpeg' || media.mediaType === 'image/png') && media.source) 
+            return media.source;
         return null;
     };
 
@@ -147,17 +120,18 @@ const ProfileList = () => {
     };
 
     const generateFiles = async (): Promise<BlobPair[]> => {
-        if (!source || !profiles.length) throw new Error("no source or profiles");
-        if (mediaType === 'image/jpeg' || mediaType === 'image/png') 
-            return await generateImages(source, profiles);
-         else if (mediaType === 'image/gif' && frames) 
-            return await generateGifs(frames, profiles);
+        if (!media.source || !profiles.length) throw new Error("no source or profiles");
+
+        if (media.mediaType === 'image/jpeg' || media.mediaType === 'image/png') 
+            return await generateImages(media.source, profiles);
+         else if (media.mediaType === 'image/gif' && media.frames) 
+            return await generateGifs(media.frames, profiles);
          else 
             throw new Error("no compatible filetype found");
     };
 
     const updateOverlay = (cur: number, max: number) => {
-        setOverlay({ content: <AppProgressBar text="Exporting" current={cur} max={max} /> });
+        dispatchOverlay({type: 'set', content: <AppProgressBar text="Exporting" current={cur} max={max} /> });
     };
 
     const generateZipFile = async (blobs: BlobPair[]) => {
@@ -169,14 +143,14 @@ const ProfileList = () => {
             const n = nameMap.get(b.name);
             if (n) fileName += `_${n}`;
             nameMap.set(b.name, (n || 0) + 1);
-            zip.file(`${fileName}${mediaTypeExtension(mediaType)}`, b.blob);
+            zip.file(`${fileName}${mediaTypeExtension(media.mediaType)}`, b.blob);
         });
         
         return await zip.generateAsync({ type: 'blob' });
     };
 
     const exportProfiles = async () => {
-        if (mediaType === 'image/gif')
+        if (media.mediaType === 'image/gif')
             updateOverlay(0, 10);
         try {
             const blobs = await generateFiles();
@@ -185,11 +159,11 @@ const ProfileList = () => {
         } catch (error) {
             console.error(error, 'could not generate files');
         } finally {
-            setOverlay({ content: null });
+            dispatchOverlay({type: 'set', content: null});
         }
     };
 
-    if (!source) return <div className={styles.profileList}></div>;
+    if (!media.source || media.isLoading) return <div className={styles.profileList}></div>;
     
     return (
         <div className={styles.profileList}>
@@ -204,17 +178,17 @@ const ProfileList = () => {
                             rounded={rounded}
                             smallPreviews={smallPreviews}
                             onlyProfile={profiles.length <= 1}
-                            onRename={(e) => onRename(p.id, e.target.value)}
-                            onSelect={() => setActiveProfile(p.id)}
+                            onRename={(e) => dispatchProfiles({type:'rename', id: p.id, name: e.target.value})}
+                            onSelect={() => dispatchProfiles({type: 'set_active', id: p.id})}
                             onDelete={() => removeProfile(p.id)} />
                         : null
                     ))}
                 </div>
-                <div className={`btn-grp ${mediaType === 'image/gif' ? '' : 'fill-last'}`}>
+                <div className={`btn-grp ${media.mediaType === 'image/gif' ? '' : 'fill-last'}`}>
                     <Checkbox checked={rounded} label="Round preview" onChange={toggleRound} />
                     <Checkbox checked={smallPreviews} label="Small previews" onChange={toggleSmallPreviews} />
                     {
-                        mediaType === 'image/gif' &&
+                        media.mediaType === 'image/gif' &&
                         <Checkbox checked={transparent} label="Transparency" onChange={toggleTransparent} />
                     } 
                     <AppButton variant="green" onClick={exportProfiles} >

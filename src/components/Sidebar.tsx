@@ -3,7 +3,7 @@ import styles from './styles/Sidebar.module.css';
 import UploadButton from "./UploadButton";
 
 interface Props {
-    onUpload: (file: File) => void
+    onUpload: (file: File) => void;
 }
 
 const Sidebar = ({onUpload}: Props) => {
