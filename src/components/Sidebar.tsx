@@ -2,11 +2,15 @@ import ProfileList from "./ProfileList";
 import styles from './styles/Sidebar.module.css';
 import UploadButton from "./UploadButton";
 
-const Sidebar = () => {
+interface Props {
+    onUpload: (file: File) => void
+}
+
+const Sidebar = ({onUpload}: Props) => {
     return (
         <div className={styles.sidebar}>
             <header className={styles.header}>
-                <UploadButton />
+                <UploadButton onUpload={onUpload}/>
             </header>
             <ProfileList />
             <footer className={styles.footer}>

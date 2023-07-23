@@ -4,7 +4,7 @@ import Checkbox from "./Checkbox";
 import ProfileListItem from "./ProfileListItem";
 import styles from './styles/ProfileList.module.css';
 import { useAtom } from 'jotai';
-import { framesAtom, mediaTypeAtom, overlayAtom, profilesAtom, sourceAtom } from "../store";
+import { defaultProfile, framesAtom, mediaTypeAtom, overlayAtom, profilesAtom, sourceAtom } from "../store";
 import { generateImages } from "../utils/gif";
 import { v4 } from "uuid";
 import JSZip from "jszip";
@@ -87,7 +87,7 @@ const ProfileList = () => {
         const ok = confirm('Resetting will remove all your current profiles. Are you sure?');
         if(!ok) return;
         const crop = centerCropImage(source);
-        setProfiles([{ id: v4(), name: 'New profile', crop: crop, active: true }]);
+        setProfiles([{...defaultProfile(), crop}]);
     };
 
     const onRename = (id: string, newName: string) => {
