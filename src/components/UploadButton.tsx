@@ -1,6 +1,6 @@
 import { useRef, ChangeEvent } from "react";
 
-import AppButton from "./AppButton";
+import Button from "./Button";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpFromBracket } from "@fortawesome/free-solid-svg-icons";
@@ -25,9 +25,9 @@ function UploadButton({onUpload}: Props) {
 
     return (
         <div>
-            <AppButton variant="green" style={{ width: '100%' }} onClick={clickUpload} >
+            <Button variant="green" style={{ width: '100%' }} onClick={clickUpload} >
                 <FontAwesomeIcon icon={faArrowUpFromBracket} />Upload image
-            </AppButton>
+            </Button>
             <input
                 ref={inpRef}
                 type={'file'}

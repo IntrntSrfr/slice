@@ -1,4 +1,4 @@
-import styles from './styles/AppProgressBar.module.css';
+import styles from './styles/ProgressBar.module.css';
 
 interface Props {
     text?: string
@@ -6,7 +6,7 @@ interface Props {
     max: number
 }
 
-const AppProgressBar = (props: Props) => {
+const ProgressBar = (props: Props) => {
     const progress = Math.max(0, Math.min(100, (props.current / props.max) * 100));
     return (
         <div className={styles.loadingBar}>
@@ -19,4 +19,4 @@ const AppProgressBar = (props: Props) => {
     );
 };
 
-export default AppProgressBar;
+export default ProgressBar;

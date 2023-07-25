@@ -1,18 +1,22 @@
-import ProfileList from "./ProfileList";
+import { ReactNode } from "react";
 import styles from './styles/Sidebar.module.css';
-import UploadButton from "./UploadButton";
 
 interface Props {
-    onUpload: (file: File) => void;
+    children?: ReactNode;
 }
 
-const Sidebar = ({onUpload}: Props) => {
+const Sidebar = ({children}: Props) => {
     return (
         <div className={styles.sidebar}>
+            {/* 
             <header className={styles.header}>
                 <UploadButton onUpload={onUpload}/>
             </header>
+             */}
+            {children}
+            {/* 
             <ProfileList />
+             */}
             <footer className={styles.footer}>
                 <div className="btn-grp">
                     <a className="btn" href="https://github.com/intrntsrfr/slice" target="_blank" rel="noreferrer">Github</a>
@@ -24,3 +28,15 @@ const Sidebar = ({onUpload}: Props) => {
 };
 
 export default Sidebar;
+
+interface SidebarHeaderProps {
+    children?: ReactNode;
+} 
+
+export const SidebarHeader = ({children}: SidebarHeaderProps) => {
+    return (
+        <header className={styles.header}>
+            {children}
+        </header>
+    );
+};

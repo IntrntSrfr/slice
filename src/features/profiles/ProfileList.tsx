@@ -1,26 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 
 import styles from './styles/ProfileList.module.css';
-import AppButton from "./AppButton";
-import Checkbox from "./Checkbox";
+import Button from "@/components/Button";
+import Checkbox from "@/components/Checkbox";
 import ProfileListItem from "./ProfileListItem";
-import AppProgressBar from "./AppProgressBar";
+import ProgressBar from "@/components/ProgressBar";
 
-import ExportWorker from '../workers/generateGif?worker';
-import { generateImages } from "../utils/gif";
-import { centerCropImage, mediaTypeExtension } from "../utils/crop";
-import { BlobPair, GifExportInit, GifExportProgress, Profile, SliceFrame } from "../types";
+import ExportWorker from '@/workers/generateGif?worker';
+import { generateImages } from "@/utils/gif";
+import { centerCropImage, mediaTypeExtension } from "@/utils/crop";
+import { BlobPair, GifExportInit, GifExportProgress, Profile, SliceFrame } from "@/types";
 
 import { useReducerAtom } from 'jotai/utils';
-import { profilesAtom, profilesReducer } from "../store/profiles";
-import { overlayAtom, overlayReducer } from "../store/overlay";
-import { mediaAtom, mediaReducer } from "../store/media";
+import { profilesAtom, profilesReducer } from "@/store/profiles";
+import { overlayAtom, overlayReducer } from "@/store/overlay";
+import { mediaAtom, mediaReducer } from "@/store/media";
+import { settingsAtom, settingsReducer } from "@/store/settings";
 
 import JSZip from "jszip";
 import saveAs from "file-saver";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBackwardStep, faCog, faFileExport, faForwardStep, faPause, faPlay, faPlus, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
-import { settingsAtom, settingsReducer } from "../store/settings";
 
 const ProfileList = () => {
     const [profiles, dispatchProfiles] = useReducerAtom(profilesAtom, profilesReducer);
@@ -151,7 +151,7 @@ const ProfileList = () => {
     };
 
     const updateOverlay = (cur: number, max: number) => {
-        dispatchOverlay({type: 'set', content: <AppProgressBar text="Exporting" current={cur} max={max} /> });
+        dispatchOverlay({type: 'set', content: <ProgressBar text="Exporting" current={cur} max={max} /> });
     };
 
     const generateZipFile = async (blobs: BlobPair[]) => {
@@ -237,12 +237,12 @@ const ProfileList = () => {
                 <div className={`btn-grp`}>
                     {/* 
  */}
-                    <AppButton variant="blue" filled={showSettings} onClick={() => toggleShowSettings()} >
+                    <Button variant="blue" filled={showSettings} onClick={() => toggleShowSettings()} >
                         <FontAwesomeIcon icon={faCog}/>Settings 
-                    </AppButton>
-                    <AppButton variant="green" onClick={exportProfiles} >
+                    </Button>
+                    <Button variant="green" onClick={exportProfiles} >
                         <FontAwesomeIcon icon={faFileExport}/>Export 
-                    </AppButton>
+                    </Button>
                 </div>
             </div>
         </div>
@@ -271,18 +271,18 @@ interface MediaButtonsProps {
 const MediaButtons = (props: MediaButtonsProps) => {
     return (
         <div className="flex rows" style={{justifyContent: 'center'}}>
-            <AppButton variant="blue" onClick={props.onPrev} >
+            <Button variant="blue" onClick={props.onPrev} >
                 <FontAwesomeIcon icon={faBackwardStep} />
-            </AppButton>
+            </Button>
             {
                 props.canPlay &&
-                <AppButton variant="blue" onClick={props.onTogglePlay} >
+                <Button variant="blue" onClick={props.onTogglePlay} >
                     <FontAwesomeIcon icon={props.isPaused ? faPlay : faPause} />
-                </AppButton>
+                </Button>
             }
-            <AppButton variant="blue" onClick={props.onNext} >
+            <Button variant="blue" onClick={props.onNext} >
                 <FontAwesomeIcon icon={faForwardStep} />
-            </AppButton>
+            </Button>
         </div>
     );
 };
@@ -297,12 +297,12 @@ const Header = ({onAdd, onReset}: HeaderProps) => {
         <div className={styles.listHeader}>
             <h2>Profiles</h2>
             <div className="flex rows" style={{justifyContent: 'center'}}>
-                <AppButton variant="blue" onClick={onAdd} >
+                <Button variant="blue" onClick={onAdd} >
                     <FontAwesomeIcon icon={faPlus} />
-                </AppButton>
-                <AppButton variant="red" onClick={onReset} >
+                </Button>
+                <Button variant="red" onClick={onReset} >
                     <FontAwesomeIcon icon={faRotateLeft} />
-                </AppButton>
+                </Button>
             </div>
         </div>
     );

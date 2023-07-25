@@ -1,7 +1,8 @@
 import { ChangeEvent, RefObject, useEffect, useRef } from 'react';
-import AppButton from './AppButton';
+
 import styles from './styles/ProfileListItem.module.css';
-import { Profile } from '../types';
+import Button from '@/components/Button';
+import { Profile } from '@/types';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
@@ -122,8 +123,8 @@ interface DeleteProps {
 
 const DeleteButton = ({onDelete, show}: DeleteProps) => {
     return (
-        <AppButton variant={'red'} filled onClick={onDelete} className={`${styles.deleteBtn} ${show?styles.active:''}`} >
+        <Button variant={'red'} filled onClick={onDelete} className={`${styles.deleteBtn} ${show?styles.active:''}`} >
             <FontAwesomeIcon icon={faTrash} /> 
-        </AppButton>
+        </Button>
     );
 };

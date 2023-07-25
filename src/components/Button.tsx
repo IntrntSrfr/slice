@@ -18,7 +18,7 @@ interface Props {
     children?: ReactNode;
 }
 
-const AppButton = (props: Props) => {
+const Button = (props: Props) => {
     return (
         <button className={`btn ${props.variant} ${props.filled ? 'btn-filled' : ''} ${props.className || ''}`} style={props.style} onClick={props.onClick} disabled={props.disabled}>
             {props.children}
@@ -26,4 +26,4 @@ const AppButton = (props: Props) => {
     );
 };
 
-export default AppButton;
+export default Button;

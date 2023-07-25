@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    
     "target": "ESNext",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "module": "ESNext",
@@ -11,6 +10,9 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
+    "paths": {
+        "@/*": ["./src/*"]
+    },
     
     /* Bundler mode */
     "moduleResolution": "node",

@@ -2,9 +2,9 @@ import { SyntheticEvent } from "react";
 
 import './App.css';
 import Overlay from "./components/Overlay";
-import Sidebar from "./components/Sidebar";
+import Sidebar, { SidebarHeader } from "./components/Sidebar";
 import Dropzone from "./components/Dropzone";
-import AppProgressBar from "./components/AppProgressBar";
+import ProgressBar from "./components/ProgressBar";
 
 import { centerCropImage } from "./utils/crop";
 import { expandFrames } from "./utils/gif";
@@ -17,6 +17,8 @@ import { mediaAtom, mediaReducer } from "./store/media";
 import ReactCrop, { Crop, PercentCrop } from "react-image-crop";
 import 'react-image-crop/dist/ReactCrop.css';
 import { parseGIF, decompressFrames } from "gifuct-js";
+import ProfileList from "./features/profiles/ProfileList";
+import UploadButton from "./components/UploadButton";
 
 const App = () => {
     const [profiles, dispatchProfiles] = useReducerAtom(profilesAtom, profilesReducer);
@@ -66,7 +68,7 @@ const App = () => {
     };
 
     const updateOverlay = (cur: number, max: number, label?: 'media' | 'frames') => {
-        dispatchOverlay({type: 'set', content: <AppProgressBar text={`Loading ${label}`} current={cur} max={max}/> });
+        dispatchOverlay({type: 'set', content: <ProgressBar text={`Loading ${label}`} current={cur} max={max}/> });
     };
 
     const uploadImage = async (file: File) => {
@@ -77,13 +79,13 @@ const App = () => {
         dispatchMedia({type: 'setLoading', isLoading: true});
         
         try {
-            const resDataURL = await readFile(file, 'DataURL', (cur, max) => dispatchOverlay({type: 'set', content: <AppProgressBar text={`Loading image`} current={cur} max={max}/> }));
+            const resDataURL = await readFile(file, 'DataURL', (cur, max) => dispatchOverlay({type: 'set', content: <ProgressBar text={`Loading image`} current={cur} max={max}/> }));
             const img = new Image();
             img.src = resDataURL as string;
             dispatchMedia({type: 'setSource', source: img});
             if (fileType === 'image/gif') {
                 updateOverlay(0, 10, 'frames');
-                const resArrayBuffer = await readFile(file, 'ArrayBuffer', (cur, max) => dispatchOverlay({type: 'set', content: <AppProgressBar text={`Loading frames`} current={cur} max={max}/> }));
+                const resArrayBuffer = await readFile(file, 'ArrayBuffer', (cur, max) => dispatchOverlay({type: 'set', content: <ProgressBar text={`Loading frames`} current={cur} max={max}/> }));
                 const buf = resArrayBuffer as ArrayBuffer;
                 const gif = parseGIF(buf);
                 const frames = decompressFrames(gif, true);
@@ -124,7 +126,12 @@ const App = () => {
                     </ReactCrop>
                 }
             </div>
-            <Sidebar onUpload={uploadImage}/>
+            <Sidebar>
+                <SidebarHeader>
+                    <UploadButton onUpload={uploadImage}/>
+                </SidebarHeader>
+                <ProfileList/>
+            </Sidebar>
         </>
     );
 };
