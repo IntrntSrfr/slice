@@ -20,7 +20,7 @@ interface Props {
 
 const AppButton = (props: Props) => {
     return (
-        <button className={`btn ${props.variant} ${props.filled ? 'btn-filled' : ''} ${props.className}`} style={props.style} onClick={props.onClick} disabled={props.disabled}>
+        <button className={`btn ${props.variant} ${props.filled ? 'btn-filled' : ''} ${props.className || ''}`} style={props.style} onClick={props.onClick} disabled={props.disabled}>
             {props.children}
         </button>
     );

@@ -28,7 +28,7 @@ type Action =
     | {type: 'setLoading', isLoading: boolean}
     | {type: 'reset'}
 
-export const mediaReducer = (media: Media, action: Action) => {
+export const mediaReducer = (media: Media, action: Action): Media => {
     switch(action.type) {
         case "setSource":{
             return {...media, source: action.source};

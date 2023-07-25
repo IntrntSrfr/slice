@@ -22,12 +22,17 @@
 }
 
 .profileList,
-.profileListInner,
 .profiles {
     flex-grow: 1;
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
+    position: relative;
+}
+
+.profileListInner {
+    position: relative;
+    overflow: hidden;
 }
 
 .profiles {
@@ -40,4 +45,50 @@
 
 h2{
     margin: 0;
+}
+
+.settings {
+    position: absolute;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 1000;
+    padding: 0 0.5em;
+    background-color: #1d1e30;
+    color: hsl(0, 0%, 85%);
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+    
+    pointer-events: none;
+    opacity: 0;
+    bottom: 50px;
+    left: 100px;
+    
+    transition: 0.1s ease-in-out;
+}
+
+.settings.active {
+    pointer-events: auto;
+    opacity: 1;
+    left: 0;
+}
+
+.settingsTitle {
+    margin: 0;
+    padding: 0.5em 0;
+    color: inherit;
+}
+
+.settings .settingsSection:not(:first-child) {
+    margin-bottom: 0.5em;
+}
+
+.settingsSectionTitle {
+    margin: 0;
+    padding: 0.5em 0;
+}
+
+.settingsSectionBody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
 }

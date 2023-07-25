@@ -19,22 +19,28 @@ import { mediaAtom, mediaReducer } from "../store/media";
 import JSZip from "jszip";
 import saveAs from "file-saver";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileExport, faPlus, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { faBackwardStep, faCog, faFileExport, faForwardStep, faPause, faPlay, faPlus, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { settingsAtom, settingsReducer } from "../store/settings";
 
 const ProfileList = () => {
     const [profiles, dispatchProfiles] = useReducerAtom(profilesAtom, profilesReducer);
     const [, dispatchOverlay] = useReducerAtom(overlayAtom, overlayReducer );
     const [media,] = useReducerAtom(mediaAtom, mediaReducer);
+    const [settings, dispatchSettings] = useReducerAtom(settingsAtom, settingsReducer);
     
     const [rounded, setRounded] = useState(false);
     const [smallPreviews, setSmallPreviews] = useState(false);
     const [transparent, setTransparent] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
+
+    const [showSettings, setShowSettings] = useState(false);
 
     const profileListRef = useRef<HTMLDivElement>(null);
 
     const toggleRound = () => setRounded(o => !o);
     const toggleSmallPreviews = () => setSmallPreviews(o => !o);
     const toggleTransparent = () => setTransparent(o => !o);
+    const toggleShowSettings = () => setShowSettings(o => !o);
 
     /**
      * adds new profile and scrolls to top of profile list
@@ -73,21 +79,35 @@ const ProfileList = () => {
         dispatchProfiles({type: 'reset', crop});
     };
 
-    const [frameIndex, setFrameIndex] = useState<number>(-1);
-    useEffect(() => {
+    const [frameIndex, setFrameIndex] = useState(-1);
+
+    const handleFrameChange = (direction: 'next' | 'previous') => {
         const frameLength = media.frames?.length;
         if(!frameLength) return;
+        switch(direction){
+            case "next":
+                setFrameIndex(prev => (((prev + 1) % frameLength) + frameLength) % frameLength);
+                break;
+            case "previous":
+                setFrameIndex(prev => (((prev - 1) % frameLength) + frameLength) % frameLength);
+                break;
+        }
+    };
+    
+    useEffect(() => {
+        const frameLength = media.frames?.length;
+        if(!frameLength || settings.performanceMode) return;
 
         let timeoutId: string | number | NodeJS.Timeout | undefined = undefined;
         const advanceFrame = (index: number) => {
-            if(!media.frames || media.mediaType !== 'image/gif') return;
+            if(!media.frames || media.mediaType !== 'image/gif' || isPaused) return;
             setFrameIndex(index);
             timeoutId = setTimeout(() => advanceFrame((index + 1) % frameLength), media.frames[index].delay);
         };
         
-        advanceFrame(0);
+        advanceFrame(frameIndex < 0 ? 0 : frameIndex);
         return () => clearTimeout(timeoutId);
-    }, [media]);
+    }, [media, settings.performanceMode, isPaused, frameIndex]);
     
     const currentImage = () => {
         if(media.frames && frameIndex >= 0 && frameIndex < media.frames.length) 
@@ -184,15 +204,44 @@ const ProfileList = () => {
                         : null
                     ))}
                 </div>
-                <div className={`btn-grp ${media.mediaType === 'image/gif' ? '' : 'fill-last'}`}>
-                    <Checkbox checked={rounded} label="Round preview" onChange={toggleRound} />
-                    <Checkbox checked={smallPreviews} label="Small previews" onChange={toggleSmallPreviews} />
-                    {
-                        media.mediaType === 'image/gif' &&
-                        <Checkbox checked={transparent} label="Transparency" onChange={toggleTransparent} />
-                    } 
+                {
+                    media.mediaType === 'image/gif' &&
+                    <MediaButtons
+                        isPaused={isPaused}
+                        canPlay={!settings.performanceMode}
+                        onNext={() => handleFrameChange('next')}
+                        onTogglePlay={() => setIsPaused(prev => !prev)}
+                        onPrev={() => handleFrameChange('previous')}
+                    />
+                }
+                <div className={`${styles.settings} ${showSettings?styles.active:''}`}>
+                    <div className={styles.settingsSection}>
+                        <h4 className={styles.settingsSectionTitle}>Previews</h4>
+                        <div className={styles.settingsSectionBody}>
+                            <Checkbox checked={rounded} label="Circular previews" onChange={toggleRound} />
+                            <Checkbox checked={smallPreviews} label="Mini previews" onChange={toggleSmallPreviews} />
+                            <Checkbox checked={settings.performanceMode} label="Performance" onChange={() => dispatchSettings({type:'setPerformanceMode', value: !settings.performanceMode})} />
+                        </div>
+                    </div>
+                    <div className={styles.settingsSection}>
+                        <h4 className={styles.settingsSectionTitle}>Export</h4>
+                        <div className={styles.settingsSectionBody}>
+                            <Checkbox checked={rounded} label="Circular crops" onChange={toggleRound} />
+                            {
+                                media.mediaType === 'image/gif' &&
+                                <Checkbox checked={transparent} label="Transparency" onChange={toggleTransparent} />
+                            } 
+                        </div>
+                    </div>
+                </div>
+                <div className={`btn-grp`}>
+                    {/* 
+ */}
+                    <AppButton variant="blue" filled={showSettings} onClick={() => toggleShowSettings()} >
+                        <FontAwesomeIcon icon={faCog}/>Settings 
+                    </AppButton>
                     <AppButton variant="green" onClick={exportProfiles} >
-                        <FontAwesomeIcon icon={faFileExport}/>Export profiles 
+                        <FontAwesomeIcon icon={faFileExport}/>Export 
                     </AppButton>
                 </div>
             </div>
@@ -201,6 +250,42 @@ const ProfileList = () => {
 };
 
 export default ProfileList;
+
+const SettingsPanel = () => {
+    const [settings, dispatchSettings] = useReducerAtom(settingsAtom, settingsReducer);
+
+    return (
+        <div>
+        </div>
+    );
+};
+
+interface MediaButtonsProps {
+    isPaused: boolean;
+    canPlay: boolean;
+    onTogglePlay: () => void;
+    onPrev: () => void;
+    onNext: () => void;
+}
+
+const MediaButtons = (props: MediaButtonsProps) => {
+    return (
+        <div className="flex rows" style={{justifyContent: 'center'}}>
+            <AppButton variant="blue" onClick={props.onPrev} >
+                <FontAwesomeIcon icon={faBackwardStep} />
+            </AppButton>
+            {
+                props.canPlay &&
+                <AppButton variant="blue" onClick={props.onTogglePlay} >
+                    <FontAwesomeIcon icon={props.isPaused ? faPlay : faPause} />
+                </AppButton>
+            }
+            <AppButton variant="blue" onClick={props.onNext} >
+                <FontAwesomeIcon icon={faForwardStep} />
+            </AppButton>
+        </div>
+    );
+};
 
 interface HeaderProps {
     onAdd: () => void;

@@ -38,28 +38,34 @@ const App = () => {
         const crop = centerCropImage(e.currentTarget);
         updateCrop({}, crop);
     };
-
-    const readFile = async (fr: FileReader, f: File, t: 'DataURL' | 'ArrayBuffer') => {
-        return await new Promise<ArrayBuffer | string | null>((res, rej) => {
+    
+    type ProgressCallback = (current: number, total: number) => void;
+    const readFile = (file: File, type: 'DataURL' | 'ArrayBuffer', onProgress?: ProgressCallback): Promise<string | ArrayBuffer | null> => {
+        return new Promise<ArrayBuffer | string | null>((res, rej) => {
+            const fr = new FileReader();
             fr.onprogress = (ev) => {
                 if(ev.lengthComputable)
-                    updateOverlay(ev.loaded, ev.total, t === 'DataURL' ? 'media' : 'frames');
+                    onProgress?.(ev.loaded, ev.total);
             };
             fr.onload = () => { res(fr.result); };
             fr.onerror = () => { rej(fr.error); };
-            if (t === 'DataURL')
-                fr.readAsDataURL(f);
-            else if (t === 'ArrayBuffer')
-                fr.readAsArrayBuffer(f); 
+            switch(type){
+                case "DataURL":
+                    fr.readAsDataURL(file);
+                    break;
+                case "ArrayBuffer":
+                    fr.readAsArrayBuffer(file); 
+                    break;
+            }
         });
     };
-
+    
     const resetSources = () => {
         dispatchMedia({type: 'reset'});
         dispatchProfiles({type: 'reset'});
     };
 
-    const updateOverlay = (cur: number, max: number, label: 'media' | 'frames') => {
+    const updateOverlay = (cur: number, max: number, label?: 'media' | 'frames') => {
         dispatchOverlay({type: 'set', content: <AppProgressBar text={`Loading ${label}`} current={cur} max={max}/> });
     };
 
@@ -70,16 +76,14 @@ const App = () => {
         dispatchMedia({type: 'setMediaType', mediaType: fileType});
         dispatchMedia({type: 'setLoading', isLoading: true});
         
-        const readerDataURL = new FileReader();
-        const readerArrayBuffer = new FileReader();
         try {
-            const resDataURL = await readFile(readerDataURL, file, 'DataURL');
+            const resDataURL = await readFile(file, 'DataURL', (cur, max) => dispatchOverlay({type: 'set', content: <AppProgressBar text={`Loading image`} current={cur} max={max}/> }));
             const img = new Image();
             img.src = resDataURL as string;
             dispatchMedia({type: 'setSource', source: img});
             if (fileType === 'image/gif') {
                 updateOverlay(0, 10, 'frames');
-                const resArrayBuffer = await readFile(readerArrayBuffer, file, 'ArrayBuffer');
+                const resArrayBuffer = await readFile(file, 'ArrayBuffer', (cur, max) => dispatchOverlay({type: 'set', content: <AppProgressBar text={`Loading frames`} current={cur} max={max}/> }));
                 const buf = resArrayBuffer as ArrayBuffer;
                 const gif = parseGIF(buf);
                 const frames = decompressFrames(gif, true);
@@ -93,13 +97,16 @@ const App = () => {
             dispatchOverlay({type: 'set', content: null});
         }
     };
-
+    
     return (
         <>
             <Overlay active={!!overlay}>
                 {overlay}
             </Overlay>
-            <Dropzone onUpload={uploadImage}/>
+            {
+                !media.isLoading && 
+                <Dropzone onUpload={uploadImage}/>
+            }
             <div className="crop-container">
                 {
                     media.source && !media.isLoading &&

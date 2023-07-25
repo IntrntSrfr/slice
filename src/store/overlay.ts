@@ -6,7 +6,7 @@ export const overlayAtom = atom<ReactNode>(null);
 type Action = 
     | {type: 'set', content: ReactNode}
 
-export const overlayReducer = (content: ReactNode, action: Action) => {
+export const overlayReducer = (content: ReactNode, action: Action): ReactNode => {
     switch(action.type){
         case 'set': {
             return action.content;
