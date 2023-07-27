@@ -2,10 +2,10 @@ import { ChangeEvent, RefObject, useEffect, useRef } from 'react';
 
 import styles from './styles/ProfileListItem.module.css';
 import Button from '@/components/Button';
-import { Profile } from '@/types';
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { Profile } from './types';
 
 interface Props {
     profile: Profile;

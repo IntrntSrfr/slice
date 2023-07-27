@@ -1,7 +1,7 @@
 import { atom } from "jotai";
 import { v4 } from "uuid";
-import { Profile } from "../types";
 import { PercentCrop } from "react-image-crop";
+import { Profile } from "@/features/profiles/types";
 
 const defaultProfile = (): Profile => ({ id: v4(), name: 'New profile', active: true });
 

@@ -6,21 +6,18 @@ import Checkbox from "@/components/Checkbox";
 import ProfileListItem from "./ProfileListItem";
 import ProgressBar from "@/components/ProgressBar";
 
-import ExportWorker from '@/workers/generateGif?worker';
-import { generateImages } from "@/utils/gif";
-import { centerCropImage, mediaTypeExtension } from "@/utils/crop";
-import { BlobPair, GifExportInit, GifExportProgress, Profile, SliceFrame } from "@/types";
-
 import { useReducerAtom } from 'jotai/utils';
 import { profilesAtom, profilesReducer } from "@/store/profiles";
 import { overlayAtom, overlayReducer } from "@/store/overlay";
 import { mediaAtom, mediaReducer } from "@/store/media";
 import { settingsAtom, settingsReducer } from "@/store/settings";
 
-import JSZip from "jszip";
-import saveAs from "file-saver";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBackwardStep, faCog, faFileExport, faForwardStep, faPause, faPlay, faPlus, faRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { centerCropImage } from "@/utils/crop";
+import { generateImages, generateGifs, generateZipFile } from "./export";
+import { BlobPair } from "./types";
+import saveAs from "file-saver";
 
 const ProfileList = () => {
     const [profiles, dispatchProfiles] = useReducerAtom(profilesAtom, profilesReducer);
@@ -28,16 +25,17 @@ const ProfileList = () => {
     const [media,] = useReducerAtom(mediaAtom, mediaReducer);
     const [settings, dispatchSettings] = useReducerAtom(settingsAtom, settingsReducer);
     
-    const [rounded, setRounded] = useState(false);
-    const [smallPreviews, setSmallPreviews] = useState(false);
+    const [roundedPreview, setRoundedPreview] = useState(false);
+    const [roundedCrop, setRoundedCrop] = useState(false);
+    const [smallPreviews, setSmallPreviews] = useState(true);
     const [transparent, setTransparent] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
-
     const [showSettings, setShowSettings] = useState(false);
 
     const profileListRef = useRef<HTMLDivElement>(null);
 
-    const toggleRound = () => setRounded(o => !o);
+    const toggleRoundPreview = () => setRoundedPreview(o => !o);
+    const toggleRoundCrop = () => setRoundedCrop(o => !o);
     const toggleSmallPreviews = () => setSmallPreviews(o => !o);
     const toggleTransparent = () => setTransparent(o => !o);
     const toggleShowSettings = () => setShowSettings(o => !o);
@@ -117,64 +115,30 @@ const ProfileList = () => {
         return null;
     };
 
-    const generateGifs = async (frames: SliceFrame[], profiles: Profile[]): Promise<BlobPair[]> => {
-        return new Promise((res, rej) => {
-            const exportWorker = new ExportWorker();
-            let acc = 0;
-            exportWorker.onmessage = (e: MessageEvent<GifExportProgress>) => {
-                if (e.data.evt === 'finished') {
-                    exportWorker.terminate();
-                    res(e.data.blobs as BlobPair[]);
-                } else if (e.data.evt === 'progress') {
-                    acc++;
-                    updateOverlay(acc, e.data.total);
-                }
-            };
-            exportWorker.onerror = () => {
-                exportWorker.terminate();
-                rej();
-            };
-            const tf: SliceFrame[] = frames.map(f => ({ delay: f.delay, dims: f.dims, imageData: f.imageData }));
-            exportWorker.postMessage({ frames: tf, profiles: profiles, transparent } as GifExportInit);
-        });
-    };
-
-    const generateFiles = async (): Promise<BlobPair[]> => {
-        if (!media.source || !profiles.length) throw new Error("no source or profiles");
-
-        if (media.mediaType === 'image/jpeg' || media.mediaType === 'image/png') 
-            return await generateImages(media.source, profiles);
-         else if (media.mediaType === 'image/gif' && media.frames) 
-            return await generateGifs(media.frames, profiles);
-         else 
-            throw new Error("no compatible filetype found");
-    };
-
     const updateOverlay = (cur: number, max: number) => {
         dispatchOverlay({type: 'set', content: <ProgressBar text="Exporting" current={cur} max={max} /> });
     };
 
-    const generateZipFile = async (blobs: BlobPair[]) => {
-        const zip = new JSZip();
-        const nameMap = new Map<string, number>();
-        blobs.forEach(b => {
-            if (b.blob == null) return; // consider adding error message :)
-            let fileName = b.name;
-            const n = nameMap.get(b.name);
-            if (n) fileName += `_${n}`;
-            nameMap.set(b.name, (n || 0) + 1);
-            zip.file(`${fileName}${mediaTypeExtension(media.mediaType)}`, b.blob);
-        });
-        
-        return await zip.generateAsync({ type: 'blob' });
-    };
-
     const exportProfiles = async () => {
-        if (media.mediaType === 'image/gif')
-            updateOverlay(0, 10);
         try {
-            const blobs = await generateFiles();
-            const zipped = await generateZipFile(blobs);
+            let blobs: BlobPair[] | null = null;
+            if (media.mediaType === 'image/jpeg' || media.mediaType === 'image/png') {
+                if(!media.source) throw new Error('source must be available');
+                blobs = await generateImages(media.source, profiles, {
+                    circularCrop: roundedCrop, 
+                    transparent,
+                });
+            } else if (media.mediaType === 'image/gif') {
+                if(!media.frames?.length) throw new Error('frames cannot be null or be empty');
+                updateOverlay(0, 10);
+                blobs = await generateGifs(media.frames, profiles, {
+                    circularCrop: roundedCrop,
+                    transparent,
+                    onProgress: (cur, max) => updateOverlay(cur, max)
+                });
+            } else throw new Error('no compatible filetype found');
+            if(!blobs) throw new Error('no files could be generated');
+            const zipped = await generateZipFile(blobs, media.mediaType);
             saveAs(zipped, 'profiles.zip');
         } catch (error) {
             console.error(error, 'could not generate files');
@@ -183,7 +147,9 @@ const ProfileList = () => {
         }
     };
 
-    if (!media.source || media.isLoading) return <div className={styles.profileList}></div>;
+    if (!media.source || media.isLoading) return (
+        <div className={styles.profileList}></div>
+    );
     
     return (
         <div className={styles.profileList}>
@@ -195,7 +161,7 @@ const ProfileList = () => {
                         <ProfileListItem key={i}
                             profile={p}
                             image={currentImage()}
-                            rounded={rounded}
+                            rounded={roundedPreview}
                             smallPreviews={smallPreviews}
                             onlyProfile={profiles.length <= 1}
                             onRename={(e) => dispatchProfiles({type:'rename', id: p.id, name: e.target.value})}
@@ -218,7 +184,7 @@ const ProfileList = () => {
                     <div className={styles.settingsSection}>
                         <h4 className={styles.settingsSectionTitle}>Previews</h4>
                         <div className={styles.settingsSectionBody}>
-                            <Checkbox checked={rounded} label="Circular previews" onChange={toggleRound} />
+                            <Checkbox checked={roundedPreview} label="Circular previews" onChange={toggleRoundPreview} />
                             <Checkbox checked={smallPreviews} label="Mini previews" onChange={toggleSmallPreviews} />
                             <Checkbox checked={settings.performanceMode} label="Performance" onChange={() => dispatchSettings({type:'setPerformanceMode', value: !settings.performanceMode})} />
                         </div>
@@ -226,11 +192,8 @@ const ProfileList = () => {
                     <div className={styles.settingsSection}>
                         <h4 className={styles.settingsSectionTitle}>Export</h4>
                         <div className={styles.settingsSectionBody}>
-                            <Checkbox checked={rounded} label="Circular crops" onChange={toggleRound} />
-                            {
-                                media.mediaType === 'image/gif' &&
-                                <Checkbox checked={transparent} label="Transparency" onChange={toggleTransparent} />
-                            } 
+                            <Checkbox checked={roundedCrop} label="Circular crops" onChange={toggleRoundCrop} />
+                            <Checkbox checked={transparent} label="Transparency" onChange={toggleTransparent} />
                         </div>
                     </div>
                 </div>
@@ -250,7 +213,7 @@ const ProfileList = () => {
 };
 
 export default ProfileList;
-
+/* 
 const SettingsPanel = () => {
     const [settings, dispatchSettings] = useReducerAtom(settingsAtom, settingsReducer);
 
@@ -259,7 +222,7 @@ const SettingsPanel = () => {
         </div>
     );
 };
-
+ */
 interface MediaButtonsProps {
     isPaused: boolean;
     canPlay: boolean;
@@ -270,7 +233,7 @@ interface MediaButtonsProps {
 
 const MediaButtons = (props: MediaButtonsProps) => {
     return (
-        <div className="flex rows" style={{justifyContent: 'center'}}>
+        <div className="flex rows" style={{justifyContent: 'center', marginBottom: '0.5em'}}>
             <Button variant="blue" onClick={props.onPrev} >
                 <FontAwesomeIcon icon={faBackwardStep} />
             </Button>
