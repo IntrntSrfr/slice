@@ -22,17 +22,14 @@ export const cropCanvas = (src: HTMLImageElement | HTMLCanvasElement | Offscreen
     let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
     if (src instanceof OffscreenCanvas) {
-        canvas = new OffscreenCanvas(src.width, src.height);
+        canvas = new OffscreenCanvas(src.width * crop.width / 100, src.height * crop.height / 100);
         ctx = canvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
     } else {
         canvas = document.createElement('canvas');
-        canvas.width = src.width;
-        canvas.height = src.height;
+        canvas.width = src.width * crop.width / 100;
+        canvas.height = src.height * crop.height / 100;
         ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
     }
-    
-    ctx.canvas.width = src.width * crop.width / 100;
-    ctx.canvas.height = src.height * crop.height / 100;
     ctx.drawImage(
         src,
         src.width * crop.x / 100,
