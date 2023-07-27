@@ -17,11 +17,20 @@ export const centerCropImage = (img: HTMLImageElement): PercentCrop => {
     return crop;
 };
 
-export const cropCanvas = (src: HTMLImageElement | HTMLCanvasElement, crop: PercentCrop): HTMLCanvasElement => {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('canvas 2D context is not available');
+export const cropCanvas = (src: HTMLImageElement | HTMLCanvasElement | OffscreenCanvas, crop: PercentCrop): HTMLCanvasElement | OffscreenCanvas => {
+    let canvas: HTMLCanvasElement | OffscreenCanvas;
+    let ctx: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
+    if (src instanceof OffscreenCanvas) {
+        canvas = new OffscreenCanvas(src.width, src.height);
+        ctx = canvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
+    } else {
+        canvas = document.createElement('canvas');
+        canvas.width = src.width;
+        canvas.height = src.height;
+        ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
+    }
+    
     ctx.canvas.width = src.width * crop.width / 100;
     ctx.canvas.height = src.height * crop.height / 100;
     ctx.drawImage(

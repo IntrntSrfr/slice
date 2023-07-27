@@ -31,6 +31,7 @@ const ProfileList = () => {
     const [transparent, setTransparent] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [frameIndex, setFrameIndex] = useState(-1);
 
     const profileListRef = useRef<HTMLDivElement>(null);
 
@@ -39,6 +40,11 @@ const ProfileList = () => {
     const toggleSmallPreviews = () => setSmallPreviews(o => !o);
     const toggleTransparent = () => setTransparent(o => !o);
     const toggleShowSettings = () => setShowSettings(o => !o);
+
+    useEffect(() => {
+        if (!roundedCrop && transparent && media.mediaType !== 'image/gif')
+            setTransparent(false);
+    }, [roundedCrop, transparent, media.mediaType]);
 
     /**
      * adds new profile and scrolls to top of profile list
@@ -77,7 +83,6 @@ const ProfileList = () => {
         dispatchProfiles({type: 'reset', crop});
     };
 
-    const [frameIndex, setFrameIndex] = useState(-1);
 
     const handleFrameChange = (direction: 'next' | 'previous') => {
         const frameLength = media.frames?.length;
@@ -186,14 +191,14 @@ const ProfileList = () => {
                         <div className={styles.settingsSectionBody}>
                             <Checkbox checked={roundedPreview} label="Circular previews" onChange={toggleRoundPreview} />
                             <Checkbox checked={smallPreviews} label="Mini previews" onChange={toggleSmallPreviews} />
-                            <Checkbox checked={settings.performanceMode} label="Performance" onChange={() => dispatchSettings({type:'setPerformanceMode', value: !settings.performanceMode})} />
+                            <Checkbox checked={settings.performanceMode} label="Performance mode" onChange={() => dispatchSettings({type:'setPerformanceMode', value: !settings.performanceMode})} />
                         </div>
                     </div>
                     <div className={styles.settingsSection}>
                         <h4 className={styles.settingsSectionTitle}>Export</h4>
                         <div className={styles.settingsSectionBody}>
                             <Checkbox checked={roundedCrop} label="Circular crops" onChange={toggleRoundCrop} />
-                            <Checkbox checked={transparent} label="Transparency" onChange={toggleTransparent} />
+                            <Checkbox checked={transparent} label="Transparency" onChange={toggleTransparent} disabled={!roundedCrop && media.mediaType !== 'image/gif'} />
                         </div>
                     </div>
                 </div>

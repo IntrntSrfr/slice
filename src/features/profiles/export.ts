@@ -50,7 +50,7 @@ const generateImage = async (
 ): Promise<Blob | null> => {
     if(!profile.crop) return null;
     try {
-        let canvas = cropCanvas(img, profile.crop);
+        let canvas = cropCanvas(img, profile.crop) as HTMLCanvasElement;
         if(options.circularCrop)
             canvas = drawCircleMask(canvas, options.transparent) as HTMLCanvasElement;
         return await new Promise(res => canvas.toBlob(res));
@@ -93,32 +93,21 @@ export const generateGif = (
     const croppedFrames: { data: ImageData, delay: number }[] = [];
     const dims = [0, 0];
     frames.forEach((f,i) => {
-        const canvas = new OffscreenCanvas(f.imageData.width, f.imageData.height);
-        const ctx = canvas.getContext('2d');
+        let canvas = new OffscreenCanvas(f.imageData.width, f.imageData.height);
+        let ctx = canvas.getContext('2d');
         if (!ctx) throw new Error('canvas 2D context is not available');
         (ctx as OffscreenCanvasRenderingContext2D).putImageData(f.imageData, 0, 0);
 
-        let dstCanvas = new OffscreenCanvas(canvas.width * crop.width / 100, canvas.height * crop.height / 100);
-        let dstCtx = dstCanvas.getContext('2d');
-        if (!dstCtx) throw new Error('canvas 2D context is not available');
-        dstCtx.drawImage(canvas,
-            canvas.width * crop.x / 100,
-            canvas.height * crop.y / 100,
-            canvas.width * crop.width / 100,
-            canvas.height * crop.height / 100,
-            0, 0, dstCanvas.width, dstCanvas.height,
-        );
-            
-        if (options.circularCrop) {
-            dstCanvas = drawCircleMask(dstCanvas, options.transparent) as OffscreenCanvas;
-            dstCtx = dstCanvas.getContext('2d');
-            if (!dstCtx) throw new Error('canvas 2D context is not available');
-        } 
+        canvas = cropCanvas(canvas, crop) as OffscreenCanvas;
+        if (options.circularCrop) 
+            canvas = drawCircleMask(canvas, options.transparent) as OffscreenCanvas;
+        ctx = canvas.getContext('2d');
+        if (!ctx) throw new Error('canvas 2D context is not available');
         
-        const imageData = (dstCtx as OffscreenCanvasRenderingContext2D).getImageData(0,0,dstCanvas.width, dstCanvas.height);
+        const imageData = (ctx as OffscreenCanvasRenderingContext2D).getImageData(0, 0, canvas.width, canvas.height);
         croppedFrames.push({ data: imageData, delay: f.delay });
-        dims[0] = canvas.width * crop.width / 100;
-        dims[1] = canvas.height * crop.height / 100;
+        dims[0] = canvas.width;
+        dims[1] = canvas.height;
         options.onProgress?.(i+1);
     });
 

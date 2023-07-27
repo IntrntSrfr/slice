@@ -128,7 +128,6 @@ button{
 
 .btn-filled {
     background-color: var(--btn-fill-color);
-    border: none;
 }
 
 .btn-filled:hover{
